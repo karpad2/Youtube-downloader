@@ -48,7 +48,6 @@ autoUpdater.on('update-not-available', () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-  mainWindow.webContents.openDevTools();
   mainWindow.webContents.once('dom-ready', () => {
     mainWindow.show();
     mainWindow.webContents.send('noUpdateReady');
@@ -69,7 +68,7 @@ autoUpdater.on('error', message => {
 }
 else {
   app.on('ready', () => {
-    mainWindow = new BrowserWindow({
+    /*mainWindow = new BrowserWindow({
       height: 800,
       width: 1200,
       show: false
@@ -79,6 +78,20 @@ else {
     mainWindow.on('closed', () => {
       mainWindow = null;
     });
+    mainWindow.webContents.once('dom-ready', () => {
+      mainWindow.show();
+      mainWindow.webContents.send('noUpdateReady');
+    })*/
+    mainWindow = new BrowserWindow({
+      height: 800,
+      width: 1200,
+      show: false
+    });
+    mainWindow.loadURL(url);
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
+    mainWindow.webContents.openDevTools();
     mainWindow.webContents.once('dom-ready', () => {
       mainWindow.show();
       mainWindow.webContents.send('noUpdateReady');
