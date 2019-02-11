@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import { ipcRenderer } from 'electron'
 import Logo from '../components/Updater/Logo'
 import Progressbar from '../components/Updater/Progressbar'
+import './Update.css'
 
 export default class Update extends Component {
   constructor(props) {
@@ -10,7 +10,7 @@ export default class Update extends Component {
 
   render() {
     return (
-      <div className="">
+      <div className="update_container">
         <Logo />
         <Progressbar percent={this.props.percent} />
       </div>

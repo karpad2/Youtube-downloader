@@ -14,6 +14,7 @@ app.on('activate', () => {
   if (mainWindow === null) mainWindow = createMainWindow();
 });
 
+if (!isDevelopment) {
 app.on('ready', () => {
   autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.checkForUpdates();
@@ -23,13 +24,16 @@ autoUpdater.on('update-available', () => {
   mainWindow = new BrowserWindow({
     height: 500,
     width: 400,
-    frame: false
+    frame: false,
+    show: false,
+    resizable: false
   });
   mainWindow.loadURL(url);
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
   mainWindow.webContents.once('dom-ready', () => {
+    mainWindow.show();
     mainWindow.webContents.send('updateReady', 0);
   })
 })
@@ -37,7 +41,8 @@ autoUpdater.on('update-available', () => {
 autoUpdater.on('update-not-available', () => {
   mainWindow = new BrowserWindow({
     height: 800,
-    width: 1200
+    width: 1200,
+    show: false
   });
   mainWindow.loadURL(url);
   mainWindow.on('closed', () => {
@@ -45,6 +50,7 @@ autoUpdater.on('update-not-available', () => {
   });
   mainWindow.webContents.openDevTools();
   mainWindow.webContents.once('dom-ready', () => {
+    mainWindow.show();
     mainWindow.webContents.send('noUpdateReady');
   })
 })
@@ -60,3 +66,22 @@ autoUpdater.on('update-downloaded', () => {
 autoUpdater.on('error', message => {
   dialog.showErrorBox("Error", message);
 })
+}
+else {
+  app.on('ready', () => {
+    mainWindow = new BrowserWindow({
+      height: 800,
+      width: 1200,
+      show: false
+    });
+    mainWindow.loadURL(url);
+    //mainWindow.webContents.openDevTools();
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
+    mainWindow.webContents.once('dom-ready', () => {
+      mainWindow.show();
+      mainWindow.webContents.send('noUpdateReady');
+    })
+  });
+}
