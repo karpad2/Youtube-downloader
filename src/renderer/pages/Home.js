@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import clipboard from 'electron-clipboard-extended'
+import Listitem from '../components/Listitem/Listitem'
 
 export default class Home extends Component {
   constructor(props) {
@@ -45,7 +46,7 @@ export default class Home extends Component {
     return (
       <div>
         {links.map((link, index) => {
-          return <div onClick={() => this.deleteLink(index)} key={index}>{link}</div>
+          return <Listitem link={link} onClick={() => this.deleteLink(index)} key={index}/>
         })}
       </div>
     )

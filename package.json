@@ -1,6 +1,6 @@
 {
   "name": "youtube-downloader",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -35,6 +35,6 @@
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "source-map-support": "^0.5.10",
-    "youtube-dl": "^1.12.2"
+    "ytdl-core": "^0.29.1"
   }
 }
