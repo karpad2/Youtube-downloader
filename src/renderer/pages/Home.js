@@ -1,18 +1,28 @@
 import React, { Component } from 'react'
 import clipboard from 'electron-clipboard-extended'
 import Listitem from '../components/Listitem/Listitem'
+import { FaCloudDownloadAlt } from 'react-icons/fa'
 
 export default class Home extends Component {
   constructor(props) {
     super(props);
     this.updateLinks = this.updateLinks.bind(this);
     this.deleteLink = this.deleteLink.bind(this);
+    this.startAll = this.startAll.bind(this);
+    this.btnRefs = [];
     this.state = {
-      links: []
+      links: [], 
     }
   }
 
+  startAll() {
+    this.btnRefs.forEach(btn => {
+      btn.current.doDownload();
+    })
+  }
+
   updateLinks(link) {
+    this.btnRefs.push(React.createRef());
     this.setState({
       links: [...this.state.links, link]
     })
@@ -24,6 +34,9 @@ export default class Home extends Component {
     this.setState({
       links: [...arr]
     })
+    arr = [...this.btnRefs];
+    arr.splice(key, 1);
+    this.btnRefs = [...arr];
   }
 
   componentDidMount() {
@@ -42,11 +55,11 @@ export default class Home extends Component {
 
   render() {
     var { links } = this.state
-    //console.log(links);
     return (
       <div>
+        <FaCloudDownloadAlt onClick={this.startAll}/>
         {links.map((link, i) => {
-          return <Listitem link={link} index={i} unmountMe={(index) => this.deleteLink(index)} key={link}/>
+          return <Listitem link={link} index={i} ref={this.btnRefs[i]} unmountMe={(index) => this.deleteLink(index)} key={link}/>
         })}
       </div>
     )

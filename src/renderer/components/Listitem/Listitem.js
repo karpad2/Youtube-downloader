@@ -26,21 +26,23 @@ export default class Listitem extends Component {
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
     var options = {
-      filter: 'audioonly'
+      quality: 'highest',
+      filter: 'audio'
     }
-    var {downloaded, fileSize} = this.state;
     ytdl.downloadFromInfo(this.state.info, options)
-    .on('progress', (length, downloaded, totallength) => {
-      this.setState({ percent: Math.round(downloaded / totallength * 100) })
-    })
-    .on('end', this.destroy)
-    .pipe(fs.createWriteStream('D:\\Music\\' + this.state.info.title + ".mp3"));
+      .on('progress', (length, downloaded, totallength) => {
+        this.setState({ percent: Math.round(downloaded / totallength * 100) })
+        console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+      })
+      .on('end', this.destroy)
+      .pipe(fs.createWriteStream('D:\\Music\\' + this.state.info.title + ".mp3"));
   }
 
   componentWillMount() {
     var {link} = this.state;
     ytdl.getInfo(link, (err, info) => {
       if (err) throw err;
+      console.log(ytdl.filterFormats(info.formats, "audio"));
       this.setState({ info: info })
     })
   }

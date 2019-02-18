@@ -3,7 +3,7 @@
 }
 
 .circle-progress {
-  stroke: red;
+  stroke: #10a344;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
