@@ -1,0 +1,9 @@
+.circle-progress {
+  fill: none;
+}
+
+.circle-progress {
+  stroke: red;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

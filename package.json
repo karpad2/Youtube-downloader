@@ -34,6 +34,8 @@
     "electron-updater": "^4.0.6",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
+    "react-icons": "^3.4.0",
+    "react-progressbar.js": "^0.2.0",
     "source-map-support": "^0.5.10",
     "ytdl-core": "^0.29.1"
   }

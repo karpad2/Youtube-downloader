@@ -1,5 +1,59 @@
 .item_container {
-  display: block;
+  display: inline-block;
   position: relative;
-  height: 200px;
+  height: 80px;
+  width: 100%;
+}
+
+.item_container * {
+  display: inline-block;
+}
+
+.item_container img{
+  height: 100%;
+  width: 110px;
+  float: left;
+}
+
+.close {
+  position: absolute;
+  left: 5px;
+  top: 5px
+}
+
+.info {
+  height: 100%;
+  float: left;
+  padding: 10px;
+}
+
+.info div:first-child {
+  padding-bottom: 23px;
+}
+
+.info :first-child, .info :last-child {
+  margin-left: 5px;
+  margin-right: 15px;
+}
+
+.btnDownload {
+  position: relative;
+  height: 100%;
+  width: 30px;
+  float: right;
+}
+
+.progressBar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.btnIcon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
 }

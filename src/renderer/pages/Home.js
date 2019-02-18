@@ -18,7 +18,7 @@ export default class Home extends Component {
     })
   }
 
-  deleteLink(key) {
+  deleteLink(key) {  
     var arr = [...this.state.links];
     arr.splice(key, 1);
     this.setState({
@@ -28,7 +28,7 @@ export default class Home extends Component {
 
   componentDidMount() {
     clipboard.on('text-changed', () => {
-      var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+      var regExp = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//;
       var text = clipboard.readText()
       var link = text.match(regExp);
       if (link != null)
@@ -45,8 +45,8 @@ export default class Home extends Component {
     //console.log(links);
     return (
       <div>
-        {links.map((link, index) => {
-          return <Listitem link={link} onClick={() => this.deleteLink(index)} key={index}/>
+        {links.map((link, i) => {
+          return <Listitem link={link} index={i} unmountMe={(index) => this.deleteLink(index)} key={link}/>
         })}
       </div>
     )
