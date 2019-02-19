@@ -2,9 +2,12 @@ import React, { Component } from 'react'
 import ytdl from 'ytdl-core'
 import fs from 'fs'
 import './Listitem.css'
-import Logo from '../Updater/Logo'
+import Loading from './Loading'
 import ProgressBar from './progressBar'
-import {FaMicrophone, FaUser, FaCloudDownloadAlt, FaWindowClose} from 'react-icons/fa'
+import {FaMicrophone, FaUser, FaCloudDownloadAlt, FaWindowClose, FaPauseCircle} from 'react-icons/fa'
+import ffmpegPath from 'ffmpeg-static-electron'
+import ffmpeg from 'fluent-ffmpeg'
+ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 export default class Listitem extends Component {
   constructor(props) {
@@ -17,6 +20,7 @@ export default class Listitem extends Component {
       link: this.props.link,
       info: null,
       isHovering: false,
+      isDownloading: false,
       percent: 0,
     }
   }
@@ -27,28 +31,37 @@ export default class Listitem extends Component {
   doDownload() {
     var options = {
       quality: 'highest',
-      filter: 'audio'
+      filter: 'audio',
+      highWaterMark: 1
     }
-    ytdl.downloadFromInfo(this.state.info, options)
+    /*ytdl.downloadFromInfo(this.state.info, options)
+        .on('progress', (length, downloaded, totallength) => {
+          this.setState({ percent: Math.round(downloaded / totallength * 100) })
+          console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+        })
+        .on('end', this.destroy)
+        .pipe(fs.createWriteStream('D:\\Music\\' + this.state.info.title + ".mp3"));*/
+    ffmpeg(ytdl.downloadFromInfo(this.state.info, options)
       .on('progress', (length, downloaded, totallength) => {
         this.setState({ percent: Math.round(downloaded / totallength * 100) })
-        console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+        //console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
       })
-      .on('end', this.destroy)
-      .pipe(fs.createWriteStream('D:\\Music\\' + this.state.info.title + ".mp3"));
+      .on('end', this.destroy))
+      .toFormat('mp3')
+      .save('D:\\Music\\' + this.state.info.title + ".mp3")
   }
 
   componentWillMount() {
     var {link} = this.state;
     ytdl.getInfo(link, (err, info) => {
       if (err) throw err;
-      console.log(ytdl.filterFormats(info.formats, "audio"));
+      console.log(ytdl.filterFormats(info.formats, "audioonly"));
       this.setState({ info: info })
     })
   }
 
   render() {
-    var {info, isHovering, percent} = this.state;
+    var {info, isHovering, isDownloading, percent} = this.state;
     var title;
     if (info != null) {
       title = info.title.split('-');
@@ -57,7 +70,7 @@ export default class Listitem extends Component {
     return (
       <div>
         {info == null ? (
-          <Logo/> 
+          <Loading /> 
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
             {isHovering && <div onClick={this.destroy} className='close'><FaWindowClose/></div>}
@@ -75,7 +88,7 @@ export default class Listitem extends Component {
                   percentage={percent}/>
               </div>
               <div className="btnIcon" onClick={this.doDownload}>
-                <FaCloudDownloadAlt/>
+                { isDownloading ? <FaPauseCircle /> : <FaCloudDownloadAlt /> }
               </div>
             </div>
           </div>

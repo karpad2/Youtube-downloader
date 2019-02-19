@@ -40,8 +40,8 @@ autoUpdater.on('update-available', () => {
 
 autoUpdater.on('update-not-available', () => {
   mainWindow = new BrowserWindow({
-    height: 800,
-    width: 1200,
+    height: 640,
+    width: 1024,
     show: false
   });
   mainWindow.loadURL(url);
