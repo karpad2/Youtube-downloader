@@ -7,7 +7,8 @@ import ProgressBar from './progressBar'
 import {FaMicrophone, FaUser, FaCloudDownloadAlt, FaWindowClose, FaPauseCircle} from 'react-icons/fa'
 import ffmpegPath from 'ffmpeg-static-electron'
 import ffmpeg from 'fluent-ffmpeg'
-ffmpeg.setFfmpegPath(ffmpegPath.path);
+
+ffmpeg.setFfmpegPath(ffmpegPath.path.replace("app.asar", "app.asar.unpacked"));
 
 export default class Listitem extends Component {
   constructor(props) {
