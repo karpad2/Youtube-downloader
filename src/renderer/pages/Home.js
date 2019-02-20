@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import clipboard from 'electron-clipboard-extended'
 import Listitem from '../components/Listitem/Listitem'
 import { FaCloudDownloadAlt } from 'react-icons/fa'
+import './Home.css'
 
 export default class Home extends Component {
   constructor(props) {
@@ -58,9 +59,9 @@ export default class Home extends Component {
     return (
       <div>
         <FaCloudDownloadAlt onClick={this.startAll}/>
-        {links.map((link, i) => {
+        {links.length > 0 ? links.map((link, i) => {
           return <Listitem link={link} index={i} ref={this.btnRefs[i]} unmountMe={(index) => this.deleteLink(index)} key={link}/>
-        })}
+        }) : <div className="hint_text">Copy a youtube link</div>}
       </div>
     )
   }

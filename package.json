@@ -39,6 +39,7 @@
     "react-icons": "^3.4.0",
     "react-progressbar.js": "^0.2.0",
     "source-map-support": "^0.5.10",
+    "typeface-iceland": "0.0.54",
     "ytdl-core": "^0.29.1"
   }
 }

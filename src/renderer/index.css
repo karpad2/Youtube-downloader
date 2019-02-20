@@ -1,6 +1,13 @@
-* { box-sizing: border-box }
+* { 
+  box-sizing: border-box;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+}
 
 body, html {
   color: #fff;
   background-color: #0f242d;
+  font-family: Iceland;
+  padding: 0;
+  margin: 0;
 }
