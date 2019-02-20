@@ -7,8 +7,11 @@ import ProgressBar from './progressBar'
 import {FaMicrophone, FaUser, FaCloudDownloadAlt, FaWindowClose, FaPauseCircle} from 'react-icons/fa'
 import ffmpegPath from 'ffmpeg-static-electron'
 import ffmpeg from 'fluent-ffmpeg'
-
-ffmpeg.setFfmpegPath(ffmpegPath.path.replace("app.asar", "app.asar.unpacked"));
+const isDevelopment = process.env.NODE_ENV !== 'production';
+if (isDevelopment)
+  ffmpeg.setFfmpegPath(ffmpegPath.path);
+else
+  ffmpeg.setFfmpegPath(ffmpegPath.path.replace("app.asar", "app.asar.unpacked"));
 
 export default class Listitem extends Component {
   constructor(props) {
@@ -33,23 +36,17 @@ export default class Listitem extends Component {
     var options = {
       quality: 'highest',
       filter: 'audio',
-      highWaterMark: 1
     }
-    /*ytdl.downloadFromInfo(this.state.info, options)
-        .on('progress', (length, downloaded, totallength) => {
-          this.setState({ percent: Math.round(downloaded / totallength * 100) })
-          console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
-        })
-        .on('end', this.destroy)
-        .pipe(fs.createWriteStream('D:\\Music\\' + this.state.info.title + ".mp3"));*/
+    var path = (`D:\\Music\\${this.state.info.title.replace(/[*/':<>?\\|]/g,'_')}.mp3`)
     ffmpeg(ytdl.downloadFromInfo(this.state.info, options)
-      .on('progress', (length, downloaded, totallength) => {
-        this.setState({ percent: Math.round(downloaded / totallength * 100) })
-        //console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
-      })
-      .on('end', this.destroy))
-      .toFormat('mp3')
-      .save('D:\\Music\\' + this.state.info.title + ".mp3")
+          .on('progress', (length, downloaded, totallength) => {
+            this.setState({ percent: Math.round(downloaded / totallength * 100) })
+            console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+          })
+          .on('end', this.destroy))
+    .toFormat('mp3')
+    .audioBitrate('192')
+    .save(path);
   }
 
   componentWillMount() {
