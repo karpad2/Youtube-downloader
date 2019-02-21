@@ -59,30 +59,32 @@ export default class Listitem extends Component {
       options = {
         filter: (format) => format.quality_label === selectedFormat
       }
-      ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
-          .on('progress', (length, downloaded, totallength) => {
-            this.setState({ percent: Math.round(downloaded / totallength * 100) })
-            console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
-          })
-          .pipe(fs.createWriteStream(path + "_audio.mp4"))
-          .on('finish', () => {
-            ffmpeg()
-              .input(ytdl.downloadFromInfo(this.state.info, options)
-                .on('progress', (length, downloaded, totallength) => {
-                  this.setState({ percent: Math.round(downloaded / totallength * 100) })
-                  console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
-                }))
-              .videoCodec('copy')
-              .input(path + "_audio.mp4")
-              .audioCodec('copy')
-              .save(path + ".mp4")
-              .on('end', () => {
-                fs.unlink(path + "_audio.mp4", err => {
-                  if(err) throw err;
-                  this.destroy();
-                });
-              });
-          })
+      ffmpeg(ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
+      .on('progress', (length, downloaded, totallength) => {
+        this.setState({ percent: Math.round(downloaded / totallength * 100) })
+        console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+      }))
+      .toFormat('mp3')
+      .audioBitrate('192')
+      .save(path+'_audio.mp3')
+      .on('end', () => {
+        ffmpeg()
+          .input(ytdl.downloadFromInfo(this.state.info, options)
+            .on('progress', (length, downloaded, totallength) => {
+              this.setState({ percent: Math.round(downloaded / totallength * 100) })
+              console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+            }))
+          .videoCodec('copy')
+          .input(path + "_audio.mp3")
+          .audioCodec('copy')
+          .save(path + ".mp4")
+          .on('end', () => {
+            fs.unlink(path + "_audio.mp3", err => {
+              if(err) throw err;
+            });
+            this.destroy();
+          });
+      })
     }
     else {
       options = {
@@ -145,14 +147,14 @@ export default class Listitem extends Component {
               <div className="info_div"><FaUser /><div>{title[0]}</div></div><br/>
               <div className="radio-group">
                 <div>
-                  <input type="radio" onClick={() => this.chooseFormat(-1)} name="type" className="btnRadio" id="option" defaultChecked />
-                  <label htmlFor="option">MP3</label>
+                  <input type="radio" onClick={() => this.chooseFormat(-1)} name={`${this.props.index}type`} className="btnRadio" id={`${this.props.index}option`} defaultChecked />
+                  <label htmlFor={`${this.props.index}option`}>MP3</label>
                 </div>
                 {videoformats.map((format, i) => {
                   return (
                     <div key={i}>
-                      <input type="radio" onClick={() => this.chooseFormat(i)} name="type" className="btnRadio" id={`option${i}`} />
-                      <label htmlFor={`option${i}`}>{format.quality_label}</label>
+                      <input type="radio" onClick={() => this.chooseFormat(i)} name={`${this.props.index}type`} className="btnRadio" id={`${this.props.index}option${i}`} />
+                      <label htmlFor={`${this.props.index}option${i}`}>{format.quality_label}</label>
                     </div>
                   )
                 })}

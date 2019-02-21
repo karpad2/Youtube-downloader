@@ -45,7 +45,7 @@ autoUpdater.on('update-not-available', () => {
     show: false
   });
   mainWindow.loadURL(url);
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
