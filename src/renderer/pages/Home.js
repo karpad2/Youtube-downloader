@@ -67,7 +67,7 @@ export default class Home extends Component {
   render() {
     var { links } = this.state
     return (
-      <div>
+      <div style={{height: '100%'}}>
         <div className="navbar">
           <div className="appName">Youtube Downloader</div>
           <div className="buttons">
@@ -86,9 +86,11 @@ export default class Home extends Component {
             Start all
           </div>
         </div>
-        {links.length > 0 ? links.map((link, i) => {
-          return <Listitem link={link} index={i} ref={this.btnRefs[i]} unmountMe={(index) => this.deleteLink(index)} key={link}/>
-        }) : <div className="hint_text">Copy a youtube link</div>}
+        <div className="items">
+          {links.length > 0 ? links.map((link, i) => {
+            return <Listitem link={link} index={i} ref={this.btnRefs[i]} unmountMe={(index) => this.deleteLink(index)} key={link}/>
+          }) : <div className="hint_text">Copy a youtube link</div>}
+        </div>
       </div>
     )
   }
