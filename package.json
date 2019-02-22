@@ -1,6 +1,6 @@
 {
   "name": "youtube-downloader",
-  "version": "1.4.1",
+  "version": "1.4.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "webpack": "^4.29.3"
   },
   "dependencies": {
+    "@material-ui/core": "^3.9.2",
     "electron-clipboard-extended": "^1.1.1",
     "electron-updater": "^4.0.6",
     "ffmpeg-static-electron": "^2.0.1",
@@ -39,7 +40,7 @@
     "react-icons": "^3.4.0",
     "react-progressbar.js": "^0.2.0",
     "source-map-support": "^0.5.10",
-    "typeface-iceland": "0.0.54",
-    "ytdl-core": "^0.29.1"
+    "ytdl-core": "^0.29.1",
+    "ytpl": "^0.1.14"
   }
 }

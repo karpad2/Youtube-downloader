@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import Update from './pages/Update';
 import Logo from './components/Updater/Logo';
 
+
+
 export default class App extends Component {
   constructor(props) {
     super(props);

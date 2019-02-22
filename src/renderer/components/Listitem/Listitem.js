@@ -4,14 +4,18 @@ import fs from 'fs'
 import './Listitem.css'
 import Loading from './Loading'
 import ProgressBar from './progressBar'
-import {FaMicrophone, FaUser, FaCloudDownloadAlt, FaWindowClose, FaPauseCircle} from 'react-icons/fa'
+import {FaMicrophone, FaUser, FaArrowDown, FaWindowClose, FaPauseCircle} from 'react-icons/fa'
 import ffmpegPath from 'ffmpeg-static-electron'
 import ffmpeg from 'fluent-ffmpeg'
+import { Select, MenuItem} from '@material-ui/core/'
+
 const isDevelopment = process.env.NODE_ENV !== 'production';
 if (isDevelopment)
   ffmpeg.setFfmpegPath(ffmpegPath.path);
 else
   ffmpeg.setFfmpegPath(ffmpegPath.path.replace("app.asar", "app.asar.unpacked"));
+
+//TODO: MP3 selectable bitrate
 
 export default class Listitem extends Component {
   constructor(props) {
@@ -30,13 +34,16 @@ export default class Listitem extends Component {
       percent: 0,
       time: 0,
       videoformats: [],
-      selectedFormat: 'mp3'
+      selectedFormat: 'mp3',
+      selectValue: null 
     }
   }
 
-  chooseFormat(id) {
-    if (id >= 0) this.setState({ selectedFormat: this.state.videoformats[id].quality_label })
-    else this.setState({ selectedFormat: "mp3" })
+  chooseFormat(event) {
+    /*if (id >= 0) this.setState({ selectedFormat: this.state.videoformats[id].quality_label })
+    else this.setState({ selectedFormat: "mp3" })*/
+    this.setState({ selectedFormat: event.target.value });
+
   }
   toHHMMSS(secs) {
     var sec_num = parseInt(secs, 10)    
@@ -53,8 +60,15 @@ export default class Listitem extends Component {
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
     var {selectedFormat} = this.state;
-    var path = (`D:\\Music\\${this.state.info.title.replace(/[*/':<>?\\|]/g,'_')}`)
-    var format, options;
+    var path = `D:\\Music`.split('\\');
+    if (!fs.existsSync(path))
+      for (var i = 0; i < path.length; i++) {
+        var dir = path.slice(0, i+1).join('\\');
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+      }
+    path = path.join('\\') + '\\';
+    var file = path + this.state.info.title.replace(/[*/'":<>?\\|]/g,'_');
+    var options;
     if (selectedFormat !== "mp3") {
       options = {
         filter: (format) => format.quality_label === selectedFormat
@@ -65,8 +79,7 @@ export default class Listitem extends Component {
         console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
       }))
       .toFormat('mp3')
-      .audioBitrate('192')
-      .save(path+'_audio.mp3')
+      .save(file+'_audio.mp3')
       .on('end', () => {
         ffmpeg()
           .input(ytdl.downloadFromInfo(this.state.info, options)
@@ -75,11 +88,11 @@ export default class Listitem extends Component {
               console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
             }))
           .videoCodec('copy')
-          .input(path + "_audio.mp3")
+          .input(file + "_audio.mp3")
           .audioCodec('copy')
-          .save(path + ".mp4")
+          .save(file + ".mp4")
           .on('end', () => {
-            fs.unlink(path + "_audio.mp3", err => {
+            fs.unlink(file + "_audio.mp3", err => {
               if(err) throw err;
             });
             this.destroy();
@@ -99,7 +112,7 @@ export default class Listitem extends Component {
             .on('end', this.destroy))
       .toFormat('mp3')
       .audioBitrate('192')
-      .save(path+'.mp3');
+      .save(file+'.mp3');
       
     }
   }
@@ -124,7 +137,7 @@ export default class Listitem extends Component {
   }
 
   render() {
-    var {info, isHovering, isDownloading, percent, time, videoformats} = this.state;
+    var {info, isHovering, isDownloading, percent, time, videoformats, selectedFormat} = this.state;
     var title, time;
     if (info != null) {
       title = info.title.split('-');
@@ -147,29 +160,27 @@ export default class Listitem extends Component {
               <div className="info_div"><FaUser /><div>{title[0]}</div></div><br/>
               <div className="radio-group">
                 <div>
-                  <input type="radio" onClick={() => this.chooseFormat(-1)} name={`${this.props.index}type`} className="btnRadio" id={`${this.props.index}option`} defaultChecked />
+                  <input type="radio" onClick={this.chooseFormat} value={"mp3"} name={`${this.props.index}type`} className="btnRadio" id={`${this.props.index}option`} defaultChecked />
                   <label htmlFor={`${this.props.index}option`}>MP3</label>
                 </div>
-                {videoformats.map((format, i) => {
-                  return (
-                    <div key={i}>
-                      <input type="radio" onClick={() => this.chooseFormat(i)} name={`${this.props.index}type`} className="btnRadio" id={`${this.props.index}option${i}`} />
-                      <label htmlFor={`${this.props.index}option${i}`}>{format.quality_label}</label>
-                    </div>
-                  )
-                })}
+                  {videoformats.map((format, i) => {
+                    return (
+                      <div key={i}>
+                        <input type="radio" onClick={this.chooseFormat} value={format.quality_label} name={`${this.props.index}type`} className="btnRadio" id={`${this.props.index}option${i}`} />
+                        <label htmlFor={`${this.props.index}option${i}`}>{format.quality_label}</label>
+                      </div>
+                    )
+                  })}
               </div>
             </div>
-            <div className="btnDownload">
-              <div className="progressBar">
-                <ProgressBar 
-                  strokeWidth="6"
-                  sqSize="45"
-                  percentage={percent}/>
-              </div>
-              <div className="btnIcon" onClick={this.doDownload}>
-                { isDownloading ? <FaPauseCircle /> : <FaCloudDownloadAlt size={30}/> }
-              </div>
+            <div className="progressBar">
+              <ProgressBar 
+                strokeWidth="5"
+                sqSize="45"
+                percentage={percent}/>
+            </div>
+            <div className="btnIcon" onClick={this.doDownload}>
+              { isDownloading ? <FaPauseCircle size={20}/> : <FaArrowDown size={20}/> }
             </div>
           </div>
         )}
