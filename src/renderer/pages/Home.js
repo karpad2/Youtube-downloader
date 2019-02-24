@@ -6,9 +6,9 @@ import { IoIosOptions } from 'react-icons/io'
 import './Home.css'
 import ytpl from 'ytpl'
 import { ipcRenderer } from 'electron'
+import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@material-ui/core';
 
 //TODO: Add playlist
-//TODO: Options panel
 //TODO: Modal option window
 
 export default class Home extends Component {
@@ -18,9 +18,15 @@ export default class Home extends Component {
     this.deleteLink = this.deleteLink.bind(this);
     this.startAll = this.startAll.bind(this);
     //this.getList = this.getList.bind(this);
+    this.handleClose = this.handleClose.bind(this);
     this.btnRefs = [];
     this.state = {
       links: [], 
+      open: false,
+      path: "D:\\Music",
+      options: {
+        path: "D:\\Music"
+      }
     }
   }
 
@@ -60,12 +66,14 @@ export default class Home extends Component {
     }).startWatching();
   }
 
+  handleClose() { this.setState({ open: false }) };
+
   componentWillUnmount() {
     clipboard.stopWatching();
   }
 
   render() {
-    var { links } = this.state
+    var { links, options, path } = this.state
     return (
       <div style={{height: '100%'}}>
         <div className="navbar">
@@ -77,7 +85,7 @@ export default class Home extends Component {
           </div>
         </div>
         <div className="menu">
-          <div className="btnOptions">
+          <div className="btnOptions" onClick={() => { this.setState({ open: true }) }}>
             <IoIosOptions size={30}/>
             Options
           </div>
@@ -88,9 +96,34 @@ export default class Home extends Component {
         </div>
         <div className="items">
           {links.length > 0 ? links.map((link, i) => {
-            return <Listitem link={link} index={i} ref={this.btnRefs[i]} unmountMe={(index) => this.deleteLink(index)} key={link}/>
+            return <Listitem options={options} link={link} index={i} ref={this.btnRefs[i]} unmountMe={(index) => this.deleteLink(index)} key={link}/>
           }) : <div className="hint_text">Copy a youtube link</div>}
         </div>
+        <Dialog 
+          open={this.state.open}
+          onClose={this.handleClose}
+          aria-labelledby="form-dialog-title">
+          <DialogTitle id="form-dialog-title">Options</DialogTitle>
+          <DialogContent>
+            <TextField 
+              autoFocus
+              margin="dense"
+              id="path"
+              label="Download path"
+              type="text"
+              value={path}
+              onChange={(event) => this.setState({ path: event.target.value })}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => { this.setState({ path: options.path }); this.handleClose()}}>
+              Close
+            </Button>
+            <Button onClick={() => { this.setState({ options: { path: this.state.path } }); this.handleClose() }}>
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     )
   }

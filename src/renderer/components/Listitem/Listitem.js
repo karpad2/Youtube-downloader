@@ -28,6 +28,7 @@ export default class Listitem extends Component {
     this.chooseFormat = this.chooseFormat.bind(this);
     this.state = {
       link: this.props.link,
+      options: this.props.options,
       info: null,
       isHovering: false,
       isDownloading: false,
@@ -39,12 +40,7 @@ export default class Listitem extends Component {
     }
   }
 
-  chooseFormat(event) {
-    /*if (id >= 0) this.setState({ selectedFormat: this.state.videoformats[id].quality_label })
-    else this.setState({ selectedFormat: "mp3" })*/
-    this.setState({ selectedFormat: event.target.value });
-
-  }
+  chooseFormat(event) { this.setState({ selectedFormat: event.target.value }) }
   toHHMMSS(secs) {
     var sec_num = parseInt(secs, 10)    
     var hours   = Math.floor(sec_num / 3600) % 24
@@ -60,7 +56,7 @@ export default class Listitem extends Component {
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
     var {selectedFormat} = this.state;
-    var path = `D:\\Music`.split('\\');
+    var path = this.state.options.path.split('\\');
     if (!fs.existsSync(path))
       for (var i = 0; i < path.length; i++) {
         var dir = path.slice(0, i+1).join('\\');

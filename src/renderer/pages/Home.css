@@ -26,7 +26,8 @@
 }
 
 .items {
-	height: calc(100% - 150px);
+	padding-top: 20px;
+	height: calc(100% - 125px);
   overflow-y: auto;
 }
 
@@ -37,7 +38,6 @@
 	width: 100%;
 	background-color: #1c1f23;
 	margin-top: 25px;
-	margin-bottom: 20px;
 }
 
 .btnOptions {

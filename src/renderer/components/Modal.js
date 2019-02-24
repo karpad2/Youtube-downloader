@@ -36,7 +36,6 @@ export default class Modal extends Component {
               id="name"
               label="Email Address"
               type="email"
-              fullWidth
             />
           </DialogContent>
           <DialogActions>
