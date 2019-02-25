@@ -1,7 +1,17 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { autoUpdater } from 'electron-updater';
+import { autoUpdater } from 'electron-updater'
+import fs from 'fs'
+var path = app.getPath('appData') + '\\youtube-downloader\\config.json';
+if (fs.existsSync(path)) {
+  var options = JSON.parse(fs.readFileSync(path, 'utf8'));
+}
+else {
+  var options = {
+    path: app.getPath('music')
+  }
+  fs.writeFileSync(path, JSON.stringify(options), 'utf8');
+}
 
-app.getPath('appData');
 //TODO: Options.json (app.getPath(appData))
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -58,6 +68,7 @@ if (!isDevelopment) {
     mainWindow.webContents.once('dom-ready', () => {
       mainWindow.show();
       mainWindow.webContents.send('noUpdateReady');
+      mainWindow.webContents.send('configPath', path)
     });
     ipcMain.on('closeWindow', () => mainWindow.close())
     ipcMain.on('resizeWindow', () => {
@@ -111,6 +122,7 @@ else {
     mainWindow.webContents.once('dom-ready', () => {
       mainWindow.show();
       mainWindow.webContents.send('noUpdateReady');
+      mainWindow.webContents.send('configPath', path)
     })
     ipcMain.on('closeWindow', () => mainWindow.close())
     ipcMain.on('resizeWindow', () => {

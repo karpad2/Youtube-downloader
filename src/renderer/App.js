@@ -4,8 +4,6 @@ import Home from './pages/Home';
 import Update from './pages/Update';
 import Logo from './components/Updater/Logo';
 
-
-
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -33,14 +31,14 @@ export default class App extends Component {
     });
     ipcRenderer.on('noUpdateReady', () => {
       this.loadApp();
-    })
+    });
   }
 
   render() {
-    var {update, percent, loading} = this.state;
+    var {update, percent, loading, options} = this.state;
     return (
       <div style={{height: '100%'}}>
-        {(!loading && update) ? <Update percent={percent}/> : <Home/>}
+        {(!loading && update) ? <Update percent={percent}/> : <Home />}
       </div>
     )
   }

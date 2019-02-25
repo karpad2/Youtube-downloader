@@ -16,6 +16,10 @@
 	border-radius: 5px;
 }
 
+.items::-webkit-scrollbar-thumb:hover{
+	background: #eba576; 
+}
+
 .navbar {
 	position: fixed;
 	height: 25px;

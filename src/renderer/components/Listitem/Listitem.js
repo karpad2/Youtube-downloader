@@ -7,7 +7,6 @@ import ProgressBar from './progressBar'
 import {FaMicrophone, FaUser, FaArrowDown, FaWindowClose, FaPauseCircle} from 'react-icons/fa'
 import ffmpegPath from 'ffmpeg-static-electron'
 import ffmpeg from 'fluent-ffmpeg'
-import { Select, MenuItem} from '@material-ui/core/'
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 if (isDevelopment)
@@ -28,7 +27,6 @@ export default class Listitem extends Component {
     this.chooseFormat = this.chooseFormat.bind(this);
     this.state = {
       link: this.props.link,
-      options: this.props.options,
       info: null,
       isHovering: false,
       isDownloading: false,
@@ -36,7 +34,6 @@ export default class Listitem extends Component {
       time: 0,
       videoformats: [],
       selectedFormat: 'mp3',
-      selectValue: null 
     }
   }
 
@@ -56,7 +53,7 @@ export default class Listitem extends Component {
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
     var {selectedFormat} = this.state;
-    var path = this.state.options.path.split('\\');
+    var path = this.props.options.path.split('\\');
     if (!fs.existsSync(path))
       for (var i = 0; i < path.length; i++) {
         var dir = path.slice(0, i+1).join('\\');
@@ -109,26 +106,25 @@ export default class Listitem extends Component {
       .toFormat('mp3')
       .audioBitrate('192')
       .save(file+'.mp3');
-      
     }
   }
 
   componentWillMount() {
     var {link} = this.state;
     ytdl.getInfo(link, (err, info) => {
-      if (err) throw err;
-      console.log(info);
-      var allformats = ytdl.filterFormats(info.formats, "videoonly");
-      var formats = [];
-      allformats.forEach(format=> {
-        if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
-      })
-      console.log(formats);
-      this.setState({ 
-        info: info, 
-        time: this.toHHMMSS(parseInt(info.length_seconds)), 
-        videoformats: formats
-      })
+      if (err) this.destroy();
+      else {
+        var allformats = ytdl.filterFormats(info.formats, "videoonly");
+        var formats = [];
+        allformats.forEach(format=> {
+          if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
+        })
+        this.setState({ 
+          info: info, 
+          time: this.toHHMMSS(parseInt(info.length_seconds)), 
+          videoformats: formats
+        })
+      }
     })
   }
 

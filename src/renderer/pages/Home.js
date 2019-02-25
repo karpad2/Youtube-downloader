@@ -1,15 +1,71 @@
 import React, { Component } from 'react'
 import clipboard from 'electron-clipboard-extended'
 import Listitem from '../components/Listitem/Listitem'
-import { FaArrowDown, FaArrowsAltV, FaWindowClose, FaWindowRestore, FaWindowMinimize } from 'react-icons/fa'
+import { FaArrowDown, FaWindowClose, FaWindowRestore, FaWindowMinimize } from 'react-icons/fa'
 import { IoIosOptions } from 'react-icons/io'
 import './Home.css'
 import ytpl from 'ytpl'
 import { ipcRenderer } from 'electron'
-import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@material-ui/core';
-
+import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, MuiThemeProvider, createMuiTheme } from '@material-ui/core';
+import fs from 'fs';
 //TODO: Add playlist
 //TODO: Modal option window
+const style = createMuiTheme({
+  overrides: {
+    MuiDialog: {
+      paper: {
+        backgroundColor: '#1c1f23'
+      },
+      root: {
+        color: '#a8a8a8'
+      }
+    },
+    MuiInput: {
+      root: {
+        color: '#a8a8a8',
+        '&$underline': {
+          '&:before': {
+            borderBottomColor: '#a8a8a8'
+          },
+          '&:after': {
+            borderBottomColor: '#eba576'
+          },
+          '&&&&:hover:before': {
+            borderBottom: '1px solid #eba576'
+          }
+        }
+      },
+    },
+    MuiButton: {
+      text: {
+        color: '#a8a8a8'
+      }
+    },
+    MuiInputLabel: {
+      root: {
+        color: '#a8a8a8',
+        "&$focused": {
+          "&$focused": {
+            "color": "#eba576"
+          }
+        }
+      },
+    },
+    MuiTypography: {
+      h6: {
+        color: '#a8a8a8'
+      }
+    }
+  },
+  typography: {
+    "fontFamily": 'Iceland',
+    "fontSize": 18,
+    "fontWeightLight": 300,
+    "fontWeightRegular": 400,
+    "fontWeightMedium": 500,
+    useNextVariants: true
+  },
+});
 
 export default class Home extends Component {
   constructor(props) {
@@ -19,30 +75,35 @@ export default class Home extends Component {
     this.startAll = this.startAll.bind(this);
     //this.getList = this.getList.bind(this);
     this.handleClose = this.handleClose.bind(this);
+    this.saveConfig = this.saveConfig.bind(this);
     this.btnRefs = [];
+    this.configPath = null;
     this.state = {
       links: [], 
       open: false,
-      path: "D:\\Music",
-      options: {
-        path: "D:\\Music"
-      }
+      path: null,
+      options: null
     }
   }
 
+  saveConfig() {
+    this.setState({ 
+      options: { path: this.state.path } 
+    });
+    fs.writeFileSync(this.configPath, JSON.stringify(this.state.options), 'utf8');
+    this.handleClose()
+  }
   startAll() {
     this.btnRefs.forEach(btn => {
       btn.current.doDownload();
     })
   }
-
   updateLinks(link) {
     this.btnRefs.push(React.createRef());
     this.setState({
       links: [...this.state.links, link]
     })
   }
-
   deleteLink(key) {  
     var arr = [...this.state.links];
     arr.splice(key, 1);
@@ -53,8 +114,17 @@ export default class Home extends Component {
     arr.splice(key, 1);
     this.btnRefs = [...arr];
   }
+  handleClose() { this.setState({ open: false }) };
 
   componentDidMount() {
+    ipcRenderer.on('configPath', (event, arg) => {
+      this.configPath = arg;
+      var options = JSON.parse(fs.readFileSync(arg), 'utf8');
+      this.setState({
+        path: options.path,
+        options: options
+      })
+    })
     clipboard.on('text-changed', () => {
       var regExp = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//;
       var text = clipboard.readText()
@@ -65,8 +135,6 @@ export default class Home extends Component {
       }
     }).startWatching();
   }
-
-  handleClose() { this.setState({ open: false }) };
 
   componentWillUnmount() {
     clipboard.stopWatching();
@@ -99,31 +167,34 @@ export default class Home extends Component {
             return <Listitem options={options} link={link} index={i} ref={this.btnRefs[i]} unmountMe={(index) => this.deleteLink(index)} key={link}/>
           }) : <div className="hint_text">Copy a youtube link</div>}
         </div>
-        <Dialog 
-          open={this.state.open}
-          onClose={this.handleClose}
-          aria-labelledby="form-dialog-title">
-          <DialogTitle id="form-dialog-title">Options</DialogTitle>
-          <DialogContent>
-            <TextField 
-              autoFocus
-              margin="dense"
-              id="path"
-              label="Download path"
-              type="text"
-              value={path}
-              onChange={(event) => this.setState({ path: event.target.value })}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => { this.setState({ path: options.path }); this.handleClose()}}>
-              Close
-            </Button>
-            <Button onClick={() => { this.setState({ options: { path: this.state.path } }); this.handleClose() }}>
-              Save
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <MuiThemeProvider theme={style}>
+          <Dialog 
+            open={this.state.open}
+            onClose={this.handleClose}
+            aria-labelledby="form-dialog-title"
+            >
+            <DialogTitle id="form-dialog-title">Options</DialogTitle>
+            <DialogContent>
+              <TextField 
+                autoFocus
+                margin="dense"
+                id="path"
+                label="Download path"
+                type="text"
+                value={path}
+                onChange={(event) => this.setState({ path: event.target.value })}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => { this.setState({ path: options.path }); this.handleClose()}}>
+                Close
+              </Button>
+              <Button onClick={this.saveConfig}>
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </MuiThemeProvider>
       </div>
     )
   }
