@@ -130,7 +130,17 @@ export default class Home extends Component {
       var text = clipboard.readText()
       var link = text.match(regExp);
       if (link != null) {
-        
+        link = text.split('&');
+        link.forEach(data=>{
+          if (data.includes('list'))
+            ytpl(text, (err, list) => {
+              if (err) throw err;
+              console.log(list);
+              list.items.forEach(link => {
+                this.updateLinks(link.url_simple)
+              })
+            })
+        })
         this.updateLinks(text);
       }
     }).startWatching();
