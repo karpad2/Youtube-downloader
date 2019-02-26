@@ -52,60 +52,62 @@ export default class Listitem extends Component {
   mouseHover() { if (!this.state.isHovering) this.setState({ isHovering: true }) }
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
-    var {selectedFormat} = this.state;
-    var path = this.props.options.path.split('\\');
-    if (!fs.existsSync(path))
-      for (var i = 0; i < path.length; i++) {
-        var dir = path.slice(0, i+1).join('\\');
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir)
-      }
-    path = path.join('\\') + '\\';
-    var file = path + this.state.info.title.replace(/[*/'":<>?\\|]/g,'_');
-    var options;
-    if (selectedFormat !== "mp3") {
-      options = {
-        filter: (format) => format.quality_label === selectedFormat
-      }
-      ffmpeg(ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
-      .on('progress', (length, downloaded, totallength) => {
-        this.setState({ percent: Math.round(downloaded / totallength * 100) })
-        console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
-      }))
-      .toFormat('mp3')
-      .save(file+'_audio.mp3')
-      .on('end', () => {
-        ffmpeg()
-          .input(ytdl.downloadFromInfo(this.state.info, options)
-            .on('progress', (length, downloaded, totallength) => {
-              this.setState({ percent: Math.round(downloaded / totallength * 100) })
-              console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
-            }))
-          .videoCodec('copy')
-          .input(file + "_audio.mp3")
-          .audioCodec('copy')
-          .save(file + ".mp4")
-          .on('end', () => {
-            fs.unlink(file + "_audio.mp3", err => {
-              if(err) throw err;
+    if (this.state.info != 0 && !isDownloading) {
+      var {selectedFormat} = this.state;
+      var path = this.props.options.path.split('\\');
+      if (!fs.existsSync(path))
+        for (var i = 0; i < path.length; i++) {
+          var dir = path.slice(0, i+1).join('\\');
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+        }
+      path = path.join('\\') + '\\';
+      var file = path + this.state.info.title.replace(/[*/'":<>?\\|]/g,'_');
+      var options;
+      if (selectedFormat !== "mp3") {
+        options = {
+          filter: (format) => format.quality_label === selectedFormat
+        }
+        ffmpeg(ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
+        .on('progress', (length, downloaded, totallength) => {
+          this.setState({ percent: Math.round(downloaded / totallength * 100) })
+          console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+        }))
+        .toFormat('mp3')
+        .save(file+'_audio.mp3')
+        .on('end', () => {
+          ffmpeg()
+            .input(ytdl.downloadFromInfo(this.state.info, options)
+              .on('progress', (length, downloaded, totallength) => {
+                this.setState({ percent: Math.round(downloaded / totallength * 100) })
+                console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+              }))
+            .videoCodec('copy')
+            .input(file + "_audio.mp3")
+            .audioCodec('copy')
+            .save(file + ".mp4")
+            .on('end', () => {
+              fs.unlink(file + "_audio.mp3", err => {
+                if(err) throw err;
+              });
+              this.destroy();
             });
-            this.destroy();
-          });
-      })
-    }
-    else {
-      options = {
-        quality: 'highest',
-        filter: 'audio'
+        })
       }
-      ffmpeg(ytdl.downloadFromInfo(this.state.info, options)
-            .on('progress', (length, downloaded, totallength) => {
-              this.setState({ percent: Math.round(downloaded / totallength * 100) })
-              console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
-            })
-            .on('end', this.destroy))
-      .toFormat('mp3')
-      .audioBitrate('192')
-      .save(file+'.mp3');
+      else {
+        options = {
+          quality: 'highest',
+          filter: 'audio'
+        }
+        ffmpeg(ytdl.downloadFromInfo(this.state.info, options)
+              .on('progress', (length, downloaded, totallength) => {
+                this.setState({ percent: Math.round(downloaded / totallength * 100) })
+                console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+              })
+              .on('end', this.destroy))
+        .toFormat('mp3')
+        .audioBitrate('192')
+        .save(file+'.mp3');
+      }
     }
   }
 

@@ -133,7 +133,7 @@ export default class Home extends Component {
         link = text.split('&');
         link.forEach(data=>{
           if (data.includes('list'))
-            ytpl(text, (err, list) => {
+            ytpl(text, {limit: 25}, (err, list) => {
               if (err) throw err;
               console.log(list);
               list.items.forEach(link => {
