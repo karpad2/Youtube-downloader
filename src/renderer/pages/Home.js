@@ -8,6 +8,9 @@ import ytpl from 'ytpl'
 import { ipcRenderer } from 'electron'
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, MuiThemeProvider, createMuiTheme } from '@material-ui/core';
 import fs from 'fs';
+
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
 //TODO: Add playlist
 //TODO: Modal option window
 const style = createMuiTheme({
@@ -73,7 +76,6 @@ export default class Home extends Component {
     this.updateLinks = this.updateLinks.bind(this);
     this.deleteLink = this.deleteLink.bind(this);
     this.startAll = this.startAll.bind(this);
-    //this.getList = this.getList.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.saveConfig = this.saveConfig.bind(this);
     this.btnRefs = [];
@@ -81,8 +83,8 @@ export default class Home extends Component {
     this.state = {
       links: [], 
       open: false,
-      path: null,
-      options: null
+      path: isDevelopment ? "D:\\Music\\Proba" : null,
+      options: isDevelopment ? {path: 'D:\\Music\\Proba'} : null
     }
   }
 
@@ -90,7 +92,7 @@ export default class Home extends Component {
     this.setState({ 
       options: { path: this.state.path } 
     });
-    fs.writeFileSync(this.configPath, JSON.stringify(this.state.options), 'utf8');
+    !isDevelopment && fs.writeFileSync(this.configPath, JSON.stringify(this.state.options), 'utf8');
     this.handleClose()
   }
   startAll() {
@@ -131,17 +133,19 @@ export default class Home extends Component {
       var link = text.match(regExp);
       if (link != null) {
         link = text.split('&');
-        link.forEach(data=>{
-          if (data.includes('list'))
-            ytpl(text, {limit: 25}, (err, list) => {
-              if (err) throw err;
-              console.log(list);
-              list.items.forEach(link => {
-                this.updateLinks(link.url_simple)
+        if (text.includes("list")) {
+          link.forEach(data=>{
+            if (data.includes('list'))
+              ytpl(text, {limit: 25}, (err, list) => {
+                if (err) throw err;
+                console.log(list);
+                list.items.forEach(link => {
+                  this.updateLinks(link.url_simple)
+                })
               })
-            })
-        })
-        this.updateLinks(text);
+          })
+        }
+        else this.updateLinks(text);
       }
     }).startWatching();
   }
@@ -152,6 +156,8 @@ export default class Home extends Component {
 
   render() {
     var { links, options, path } = this.state
+    console.log(options);
+    
     return (
       <div style={{height: '100%'}}>
         <div className="navbar">

@@ -1,6 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater'
+const isDevelopment = process.env.NODE_ENV !== 'production';
 import fs from 'fs'
+
 var path = app.getPath('appData') + '\\youtube-downloader\\config.json';
 if (!fs.existsSync(path)) {
   var options = {
@@ -8,7 +10,6 @@ if (!fs.existsSync(path)) {
   }
   fs.writeFileSync(path, JSON.stringify(options), 'utf8');
 }
-const isDevelopment = process.env.NODE_ENV !== 'production';
 
 let mainWindow;
 let url = isDevelopment ? 'http://localhost:9080' : `file://${__dirname}/index.html`;

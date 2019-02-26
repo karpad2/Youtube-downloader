@@ -52,7 +52,7 @@ export default class Listitem extends Component {
   mouseHover() { if (!this.state.isHovering) this.setState({ isHovering: true }) }
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
-    if (this.state.info != 0 && !isDownloading) {
+    if (this.state.info != null && !this.state.isDownloading) {
       var {selectedFormat} = this.state;
       var path = this.props.options.path.split('\\');
       if (!fs.existsSync(path))
@@ -70,7 +70,7 @@ export default class Listitem extends Component {
         ffmpeg(ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
         .on('progress', (length, downloaded, totallength) => {
           this.setState({ percent: Math.round(downloaded / totallength * 100) })
-          console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+          console.log((downloaded / 1024 / 1024).toFixed(2) + " MB/" + (totallength / 1024 / 1024).toFixed(2) + " MB");
         }))
         .toFormat('mp3')
         .save(file+'_audio.mp3')
@@ -79,7 +79,7 @@ export default class Listitem extends Component {
             .input(ytdl.downloadFromInfo(this.state.info, options)
               .on('progress', (length, downloaded, totallength) => {
                 this.setState({ percent: Math.round(downloaded / totallength * 100) })
-                console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
+                console.log((downloaded / 1024 / 1024).toFixed(2) + " MB/" + (totallength / 1024 / 1024).toFixed(2) + " MB");
               }))
             .videoCodec('copy')
             .input(file + "_audio.mp3")
