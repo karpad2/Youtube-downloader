@@ -77,14 +77,15 @@ export default class Home extends Component {
     this.startAll = this.startAll.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.saveConfig = this.saveConfig.bind(this);
-    this.btnRefs = [];
+    this.numDown = 3;
+    this.filterNum = 20;
     this.configPath = null;
     this.state = {
-      links: [], 
+      data: [], 
       open: false,
-      path: "D:\\Music",
+      path: "D:\\Music\\Dev",
       options: {
-        path: "D:\\Music"
+        path: "D:\\Music\\Dev"
       }
     }
   }
@@ -100,30 +101,32 @@ export default class Home extends Component {
     this.handleClose()
   }
   startAll() {
-    /*this.btnRefs.forEach(btn => {
-      btn.current.doDownload();
-    })*/
-    for (var i = 0; i < 2; i++)
-      this.btnRefs[i].current.doDownload();
+    for (var i = 0; i < this.numDown; i++)
+      if (this.state.data[i] != null && !this.state.data[i].ref.current.state.isDownloading) {
+        this.state.data[i].ref.current.doDownload();
+      }
   }
   updateLinks(link) {
-    if (!this.state.links.includes(link)) {
-      this.btnRefs.push(React.createRef());
+    if (!this.state.data.some(e => e.link === link)) {
+      var data = {
+        ref: React.createRef(),
+        link: link
+      }
       this.setState({
-        links: [...this.state.links, link]
+        data: [...this.state.data, data]
       })
     }
   }
-  deleteLink(key) {  
-    var arr = [...this.state.links];
+  deleteLink(key) {
+    var { data } = this.state;
+    if (data[this.numDown] != null && !data[this.numDown].ref.current.state.isDownloading) {
+      data[this.numDown].ref.current.doDownload();
+    }
+    var arr = [...data];
     arr.splice(key, 1);
     this.setState({
-      links: [...arr]
+      data: [...arr]
     })
-    arr = [...this.btnRefs];
-    arr.splice(key, 1);
-    this.btnRefs = [...arr];
-    this.btnRefs[key].current.doDownload();
   }
   handleClose() { this.setState({ open: false }) };
 
@@ -142,10 +145,10 @@ export default class Home extends Component {
       var link = text.match(regExp);
       if (link != null) {
         link = text.split('&');
-        if (text.includes("list")) {
+        if (text.includes("list") || text.includes("channel")) {
           link.forEach(data=>{
-            if (data.includes('list'))
-              ytpl(text, {limit: 25}, (err, list) => {
+            if (data.includes('list') || text.includes("channel"))
+              ytpl(text, {limit: this.filterNum}, (err, list) => {
                 if (err) throw err;
                 console.log(list);
                 list.items.forEach(link => {
@@ -164,7 +167,7 @@ export default class Home extends Component {
   }
 
   render() {
-    var { links, options, path } = this.state
+    var { data, options, path } = this.state
     
     return (
       <div style={{height: '100%'}}>
@@ -187,8 +190,8 @@ export default class Home extends Component {
           </div>
         </div>
         <div className="items">
-          {links.length > 0 ? links.map((link, i) => {
-            return <Listitem options={options} link={link} index={i} ref={this.btnRefs[i]} unmountMe={(index) => this.deleteLink(index)} key={link}/>
+          {data.length > 0 ? data.map((link, i) => {
+            return <Listitem options={options} link={link.link} index={i} ref={link.ref} unmountMe={(index) => this.deleteLink(index)} key={link.link}/>
           }) : <div className="hint_text">Copy a youtube link</div>}
         </div>
         <MuiThemeProvider theme={style}>

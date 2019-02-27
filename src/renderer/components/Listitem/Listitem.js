@@ -25,6 +25,7 @@ export default class Listitem extends Component {
     this.doDownload = this.doDownload.bind(this);
     this.toHHMMSS = this.toHHMMSS.bind(this);
     this.chooseFormat = this.chooseFormat.bind(this);
+    this.isLoading = this.isLoading.bind(this);
     this.state = {
       link: this.props.link,
       info: null,
@@ -37,6 +38,7 @@ export default class Listitem extends Component {
     }
   }
 
+  isLoading() { return this.state.info == null }
   chooseFormat(event) { this.setState({ selectedFormat: event.target.value }) }
   toHHMMSS(secs) {
     var sec_num = parseInt(secs, 10)    
@@ -54,6 +56,7 @@ export default class Listitem extends Component {
   doDownload() {
     if (this.state.info != null && !this.state.isDownloading) {
       var {selectedFormat} = this.state;
+      this.setState({isDownloading: true});
       var path = this.props.options.path.split('\\');
       if (!fs.existsSync(path))
         for (var i = 0; i < path.length; i++) {
@@ -79,7 +82,6 @@ export default class Listitem extends Component {
             .input(ytdl.downloadFromInfo(this.state.info, options)
               .on('progress', (length, downloaded, totallength) => {
                 this.setState({ percent: Math.round(downloaded / totallength * 100) })
-                console.log((downloaded / 1024 / 1024).toFixed(2) + " MB/" + (totallength / 1024 / 1024).toFixed(2) + " MB");
               }))
             .videoCodec('copy')
             .input(file + "_audio.mp3")
@@ -101,7 +103,6 @@ export default class Listitem extends Component {
         ffmpeg(ytdl.downloadFromInfo(this.state.info, options)
               .on('progress', (length, downloaded, totallength) => {
                 this.setState({ percent: Math.round(downloaded / totallength * 100) })
-                console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
               })
               .on('end', this.destroy))
         .toFormat('mp3')
@@ -131,7 +132,7 @@ export default class Listitem extends Component {
   }
 
   render() {
-    var {info, isHovering, isDownloading, percent, time, videoformats, selectedFormat} = this.state;
+    var {info, isHovering, isDownloading, percent, time, videoformats} = this.state;
     var title, time;
     if (info != null) {
       title = info.title.split('-');
