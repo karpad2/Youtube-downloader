@@ -4,6 +4,9 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 import fs from 'fs'
 
 var path = app.getPath('appData') + '\\youtube-downloader\\config.json';
+if (isDevelopment) path += "config.json"
+else path += "config_dev.json"
+
 if (!fs.existsSync(path)) {
   var options = {
     path: app.getPath('music')

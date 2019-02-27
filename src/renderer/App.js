@@ -26,7 +26,6 @@ export default class App extends Component {
 
   componentWillMount() {
     ipcRenderer.on('updateReady', (event, arg) => {
-      console.log(arg);
       this.updateReady(arg);
     });
     ipcRenderer.on('noUpdateReady', () => {
@@ -35,7 +34,7 @@ export default class App extends Component {
   }
 
   render() {
-    var {update, percent, loading, options} = this.state;
+    var {update, percent, loading} = this.state;
     return (
       <div style={{height: '100%'}}>
         {(!loading && update) ? <Update percent={percent}/> : <Home />}

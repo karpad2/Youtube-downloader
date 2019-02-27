@@ -9,7 +9,6 @@ import { ipcRenderer } from 'electron'
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, MuiThemeProvider, createMuiTheme } from '@material-ui/core';
 import fs from 'fs';
 
-const isDevelopment = process.env.NODE_ENV !== 'production';
 
 //TODO: Add playlist
 //TODO: Modal option window
@@ -83,28 +82,37 @@ export default class Home extends Component {
     this.state = {
       links: [], 
       open: false,
-      path: isDevelopment ? "D:\\Music\\Proba" : null,
-      options: isDevelopment ? {path: 'D:\\Music\\Proba'} : null
+      path: "D:\\Music",
+      options: {
+        path: "D:\\Music"
+      }
     }
   }
 
   saveConfig() {
+    var options = {
+      path: this.state.path
+    };
     this.setState({ 
-      options: { path: this.state.path } 
-    });
-    !isDevelopment && fs.writeFileSync(this.configPath, JSON.stringify(this.state.options), 'utf8');
+      options: options
+    });    
+    fs.writeFileSync(this.configPath, JSON.stringify(options), 'utf8');
     this.handleClose()
   }
   startAll() {
-    this.btnRefs.forEach(btn => {
+    /*this.btnRefs.forEach(btn => {
       btn.current.doDownload();
-    })
+    })*/
+    for (var i = 0; i < 2; i++)
+      this.btnRefs[i].current.doDownload();
   }
   updateLinks(link) {
-    this.btnRefs.push(React.createRef());
-    this.setState({
-      links: [...this.state.links, link]
-    })
+    if (!this.state.links.includes(link)) {
+      this.btnRefs.push(React.createRef());
+      this.setState({
+        links: [...this.state.links, link]
+      })
+    }
   }
   deleteLink(key) {  
     var arr = [...this.state.links];
@@ -115,6 +123,7 @@ export default class Home extends Component {
     arr = [...this.btnRefs];
     arr.splice(key, 1);
     this.btnRefs = [...arr];
+    this.btnRefs[key].current.doDownload();
   }
   handleClose() { this.setState({ open: false }) };
 
@@ -156,7 +165,6 @@ export default class Home extends Component {
 
   render() {
     var { links, options, path } = this.state
-    console.log(options);
     
     return (
       <div style={{height: '100%'}}>
