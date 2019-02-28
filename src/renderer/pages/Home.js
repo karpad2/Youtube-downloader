@@ -83,6 +83,7 @@ export default class Home extends Component {
     this.state = {
       data: [], 
       open: false,
+      autoDownload: false,
       path: "D:\\Music\\Dev",
       options: {
         path: "D:\\Music\\Dev"
@@ -101,10 +102,10 @@ export default class Home extends Component {
     this.handleClose()
   }
   startAll() {
+    this.setState({autoDownload: !this.state.autoDownload})
     for (var i = 0; i < this.numDown; i++)
-      if (this.state.data[i] != null && !this.state.data[i].ref.current.state.isDownloading) {
+      if (this.state.data[i] != null)
         this.state.data[i].ref.current.doDownload();
-      }
   }
   updateLinks(link) {
     if (!this.state.data.some(e => e.link === link)) {
@@ -119,9 +120,10 @@ export default class Home extends Component {
   }
   deleteLink(key) {
     var { data } = this.state;
-    if (data[this.numDown] != null && !data[this.numDown].ref.current.state.isDownloading) {
-      data[this.numDown].ref.current.doDownload();
-    }
+    if (this.state.autoDownload)
+      for (var i = 0; i < this.numDown; i++)
+        if (this.state.data[i] != null && !this.state.data[i].ref.current.state.isDownloading)
+          this.state.data[i].ref.current.doDownload();
     var arr = [...data];
     arr.splice(key, 1);
     this.setState({
@@ -185,8 +187,8 @@ export default class Home extends Component {
             Options
           </div>
           <div className="btnDownload">
-            <FaArrowDown size={30} onClick={this.startAll}/>
-            Start all
+            <FaArrowDown size={30} color={this.state.autoDownload ? '#eba576' : '#a8a8a8'} onClick={this.startAll}/>
+            Auto
           </div>
         </div>
         <div className="items">
