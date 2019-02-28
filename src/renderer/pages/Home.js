@@ -121,7 +121,7 @@ export default class Home extends Component {
   deleteLink(key) {
     var { data } = this.state;
     if (this.state.autoDownload)
-      for (var i = 0; i < this.numDown; i++)
+      for (var i = 0; i <= this.numDown; i++)
         if (this.state.data[i] != null && !this.state.data[i].ref.current.state.isDownloading)
           this.state.data[i].ref.current.doDownload();
     var arr = [...data];
