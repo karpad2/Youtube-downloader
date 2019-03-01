@@ -84,7 +84,9 @@ export default class Listitem extends Component {
                 if (!fs.existsSync(dir)) fs.mkdirSync(dir)
               }
             }
-            path = path.join('\\') + '\\';
+            else
+              path = path.split("\\")
+            path = path.join("\\") + "\\";
           }
           else {
             if (!fs.existsSync(path)) {
@@ -94,7 +96,9 @@ export default class Listitem extends Component {
                 if (!fs.existsSync(dir)) fs.mkdirSync(dir)
               }
             }
-            path = path.join('/') + '/';
+            else
+              path = path.split("/")
+            path = path.join("/") + "/";
           }
           var file = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
           this.audio = ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
