@@ -15,7 +15,10 @@
     "type": "git",
     "url": "git+https://github.com/vkorni97/Youtube-downloader.git"
   },
-  "author": "",
+  "author": {
+    "name": "Vaci Kornel",
+    "email": "vacikorni@freemail.hu"
+  },
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/vkorni97/Youtube-downloader/issues"
@@ -43,5 +46,8 @@
     "source-map-support": "^0.5.10",
     "ytdl-core": "^0.29.1",
     "ytpl": "^0.1.14"
+  },
+  "build": {
+    "appId": "com.kornel.youtube"
   }
 }

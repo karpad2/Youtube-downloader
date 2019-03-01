@@ -83,18 +83,18 @@ export default class Listitem extends Component {
                 var dir = path.slice(0, i+1).join('\\');
                 if (!fs.existsSync(dir)) fs.mkdirSync(dir)
               }
-              path = path.join('\\') + '\\';
             }
+            path = path.join('\\') + '\\';
           }
           else {
             if (!fs.existsSync(path)) {
               path = path.split("/")
               for (var i = 1; i < path.length; i++) {
-                var dir = path.slice(0, i+1).join('/');
+                var dir = path.slice(0, i+1).join("/");
                 if (!fs.existsSync(dir)) fs.mkdirSync(dir)
               }
-              path = path.join('/') + '/';
             }
+            path = path.join('/') + '/';
           }
           var file = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
           this.audio = ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})

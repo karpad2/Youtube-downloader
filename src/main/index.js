@@ -18,7 +18,8 @@ let mainWindow;
 let url = isDevelopment ? 'http://localhost:9080' : `file://${__dirname}/index.html`;
 
 app.on('window-all-closed', () => {
-  app.quit();
+  if (process.platform !== 'darwin')
+    app.quit()
 });
 
 app.on('activate', () => {
@@ -27,8 +28,35 @@ app.on('activate', () => {
 
 if (!isDevelopment) {
   app.on('ready', () => {
-    autoUpdater.autoInstallOnAppQuit = false;
-    autoUpdater.checkForUpdates();
+    if (process.platform ==='win32') {
+      autoUpdater.autoInstallOnAppQuit = false;
+      autoUpdater.checkForUpdates();
+    }
+    else {
+      mainWindow = new BrowserWindow({
+        height: 800,
+        width: 1200,
+        show: false,
+        frame: false
+      });
+      mainWindow.loadURL(url);
+      mainWindow.on('closed', () => {
+        mainWindow = null;
+      });
+      mainWindow.webContents.once('dom-ready', () => {
+        mainWindow.show();
+        mainWindow.webContents.send('noUpdateReady');
+        mainWindow.webContents.send('configPath', path)
+      })
+      ipcMain.on('closeWindow', () => mainWindow.close())
+      ipcMain.on('resizeWindow', () => {
+        if (mainWindow.isMaximized())
+          mainWindow.unmaximize()
+        else
+          mainWindow.maximize();
+      })
+      ipcMain.on('minimizeWindow', () => mainWindow.minimize())
+    }
   });
 
   autoUpdater.on('update-available', () => {
@@ -58,9 +86,7 @@ if (!isDevelopment) {
       minHeight: 500,
       minWidth: 800
     });
-    mainWindow.loadURL(url);
-    //mainWindow.webContents.openDevTools();
-    
+    mainWindow.loadURL(url);    
     mainWindow.on('closed', () => {
       mainWindow = null;
     });
@@ -93,21 +119,6 @@ if (!isDevelopment) {
 }
 else {
   app.on('ready', () => {
-    /*mainWindow = new BrowserWindow({
-      height: 400,
-      width: 300,
-      frame: false,
-      show: false,
-      resizable: false
-    });
-    mainWindow.loadURL(url);
-    mainWindow.on('closed', () => {
-      mainWindow = null;
-    });
-    mainWindow.webContents.once('dom-ready', () => {
-      mainWindow.show();
-      mainWindow.webContents.send('updateReady', 50);
-    })*/
     mainWindow = new BrowserWindow({
       height: 800,
       width: 1200,
