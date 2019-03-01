@@ -7,7 +7,6 @@ import ProgressBar from './progressBar'
 import {FaMicrophone, FaUser, FaArrowDown, FaWindowClose, FaPauseCircle, FaPlayCircle} from 'react-icons/fa'
 import ffmpegPath from 'ffmpeg-static-electron'
 import ffmpeg from 'fluent-ffmpeg'
-import { on } from 'electron-clipboard-extended';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 if (isDevelopment)
@@ -57,15 +56,6 @@ export default class Listitem extends Component {
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
     if (this.state.info != null) {
-      var {selectedFormat} = this.state;
-      var path = this.props.options.path.split('\\');
-      if (!fs.existsSync(path))
-        for (var i = 0; i < path.length; i++) {
-          var dir = path.slice(0, i+1).join('\\');
-          if (!fs.existsSync(dir)) fs.mkdirSync(dir)
-        }
-      path = path.join('\\') + '\\';
-      var file = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
       var options = {
         quality: 'highest',
         filter: 'audio'
@@ -84,6 +74,29 @@ export default class Listitem extends Component {
           }
         }
         else {
+          var {selectedFormat} = this.state;
+          var path = this.props.options.path;
+          if (process.platform === "win32") {
+            if (!fs.existsSync(path)) {
+              path = path.split("\\")
+              for (var i = 0; i < path.length; i++) {
+                var dir = path.slice(0, i+1).join('\\');
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+              }
+              path = path.join('\\') + '\\';
+            }
+          }
+          else {
+            if (!fs.existsSync(path)) {
+              path = path.split("/")
+              for (var i = 1; i < path.length; i++) {
+                var dir = path.slice(0, i+1).join('/');
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+              }
+              path = path.join('/') + '/';
+            }
+          }
+          var file = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
           this.audio = ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
           .on('progress', (length, downloaded, totallength) => {
             this.setState({ percent: Math.round(downloaded / totallength * 100) })
