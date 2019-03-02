@@ -8,6 +8,7 @@ import ytpl from 'ytpl'
 import { ipcRenderer } from 'electron'
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, MuiThemeProvider, createMuiTheme } from '@material-ui/core';
 import fs from 'fs';
+import Listitemfinished from '../components/Listitem/Listitemfinished';
 
 
 //TODO: Add playlist
@@ -77,11 +78,13 @@ export default class Home extends Component {
     this.startAll = this.startAll.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.saveConfig = this.saveConfig.bind(this);
+    this.deleteFile = this.deleteFile.bind(this);
     this.numDown = 3;
     this.filterNum = 20;
     this.configPath = null;
     this.state = {
-      data: [], 
+      data: [],
+      finished: [],
       open: false,
       autoDownload: false,
       path: "D:\\Music\\Dev",
@@ -118,7 +121,7 @@ export default class Home extends Component {
       })
     }
   }
-  deleteLink(key) {
+  deleteLink(key, info, path) {
     var { data } = this.state;
     if (this.state.autoDownload)
       for (var i = 0; i <= this.numDown; i++)
@@ -128,6 +131,21 @@ export default class Home extends Component {
     arr.splice(key, 1);
     this.setState({
       data: [...arr]
+    })
+    if (info != null) {
+      var finished = {
+        ref: React.createRef(),
+        info: info,
+        path: path
+      }
+      this.setState({ finished: [...this.state.finished, finished] })
+    }
+  }
+  deleteFile(key) {
+    var arr = [...this.state.finished];
+    arr.splice(key, 1);
+    this.setState({
+      finished: [...arr]
     })
   }
   handleClose() { this.setState({ open: false }) };
@@ -169,8 +187,7 @@ export default class Home extends Component {
   }
 
   render() {
-    var { data, options, path } = this.state
-    
+    var { data, finished, options, path } = this.state
     return (
       <div style={{height: '100%'}}>
         <div className="navbar">
@@ -192,9 +209,13 @@ export default class Home extends Component {
           </div>
         </div>
         <div className="items">
-          {data.length > 0 ? data.map((link, i) => {
-            return <Listitem options={options} link={link.link} index={i} ref={link.ref} unmountMe={(index) => this.deleteLink(index)} key={link.link}/>
-          }) : <div className="hint_text">Copy a youtube link</div>}
+          {data.map((link, i) => {
+            return <Listitem options={options} link={link.link} index={i} ref={link.ref} unmountMe={(index, info, path) => {this.deleteLink(index, info, path)}} key={link.link}/>
+          })}
+          {finished.map((file, i) => {
+            return <Listitemfinished path={file.path} info={file.info} index={i} ref={file.ref} unmountMe={(index) => this.deleteFile(index)} key={file.info.title}/>
+          })}
+          {(data.length == 0 && finished.length == 0) && <div className="hint_text">Copy a youtube link</div>}
         </div>
         <MuiThemeProvider theme={style}>
           <Dialog 

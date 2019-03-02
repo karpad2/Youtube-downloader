@@ -13,7 +13,6 @@ if (isDevelopment)
   ffmpeg.setFfmpegPath(ffmpegPath.path);
 else
   ffmpeg.setFfmpegPath(ffmpegPath.path.replace("app.asar", "app.asar.unpacked"));
-
 //TODO: MP3 selectable bitrate
 
 export default class Listitem extends Component {
@@ -26,6 +25,7 @@ export default class Listitem extends Component {
     this.toHHMMSS = this.toHHMMSS.bind(this);
     this.chooseFormat = this.chooseFormat.bind(this);
     this.pause = this.pause.bind(this);
+    this.close = this.close.bind(this);
     this.audio = null;
     this.video = null;
     this.state = {
@@ -51,7 +51,8 @@ export default class Listitem extends Component {
         .filter((v,i) => v !== "00" || i > 0)
         .join(":")
   }
-  destroy() { this.props.unmountMe(this.props.index) }
+  close() { this.props.unmountMe(this.props.index) }
+  destroy(path) { this.props.unmountMe(this.props.index, this.state.info, path) }
   mouseHover() { if (!this.state.isHovering) this.setState({ isHovering: true }) }
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
@@ -106,7 +107,7 @@ export default class Listitem extends Component {
             this.setState({ percent: Math.round(downloaded / totallength * 100) })
           })
           if (selectedFormat == 'mp3') {
-            ffmpeg(this.audio.on('end', this.destroy))
+            ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
             .toFormat('mp3')
             .audioBitrate('192')
             .save(file+'.mp3');
@@ -131,7 +132,8 @@ export default class Listitem extends Component {
                 fs.unlink(file + "_audio.mp3", err => {
                   if(err) throw err;
                 });
-                this.destroy();
+                this.savedPath = file + ".mp4"
+                this.destroy(file + ".mp4");
               });
             })
           }
@@ -155,7 +157,7 @@ export default class Listitem extends Component {
   componentWillMount() {
     var {link} = this.state;
     ytdl.getInfo(link, (err, info) => {
-      if (err) this.destroy();
+      if (err) this.close();
       else {
         var allformats = ytdl.filterFormats(info.formats, "videoonly");
         var formats = [];
@@ -185,7 +187,7 @@ export default class Listitem extends Component {
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
             <div className="img_container">
-              {isHovering && <div onClick={this.destroy} className='close'><FaWindowClose/></div>}
+              {isHovering && <div onClick={this.close} className='close'><FaWindowClose/></div>}
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
             </div>

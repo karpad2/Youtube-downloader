@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater'
 const isDevelopment = process.env.NODE_ENV !== 'production';
 import fs from 'fs'
@@ -28,35 +28,8 @@ app.on('activate', () => {
 
 if (!isDevelopment) {
   app.on('ready', () => {
-    if (process.platform ==='win32') {
       autoUpdater.autoInstallOnAppQuit = false;
       autoUpdater.checkForUpdates();
-    }
-    else {
-      mainWindow = new BrowserWindow({
-        height: 800,
-        width: 1200,
-        show: false,
-        frame: false
-      });
-      mainWindow.loadURL(url);
-      mainWindow.on('closed', () => {
-        mainWindow = null;
-      });
-      mainWindow.webContents.once('dom-ready', () => {
-        mainWindow.show();
-        mainWindow.webContents.send('noUpdateReady');
-        mainWindow.webContents.send('configPath', path)
-      })
-      ipcMain.on('closeWindow', () => mainWindow.close())
-      ipcMain.on('resizeWindow', () => {
-        if (mainWindow.isMaximized())
-          mainWindow.unmaximize()
-        else
-          mainWindow.maximize();
-      })
-      ipcMain.on('minimizeWindow', () => mainWindow.minimize())
-    }
   });
 
   autoUpdater.on('update-available', () => {
@@ -80,11 +53,11 @@ if (!isDevelopment) {
   autoUpdater.on('update-not-available', () => {
     mainWindow = new BrowserWindow({
       height: 600,
-      width: 1000,
+      width: 875,
       frame: false,
       show: false,
       minHeight: 500,
-      minWidth: 800
+      minWidth: 875
     });
     mainWindow.loadURL(url);    
     mainWindow.on('closed', () => {
@@ -103,6 +76,9 @@ if (!isDevelopment) {
         mainWindow.maximize();
     })
     ipcMain.on('minimizeWindow', () => mainWindow.minimize())
+    ipcMain.on('openFolder', (event, arg) => {
+      shell.showItemInFolder(arg);
+    })
   })
 
   autoUpdater.on('download-progress', (progress) => {

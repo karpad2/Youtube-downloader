@@ -1,6 +1,6 @@
 {
   "name": "youtube-downloader",
-  "version": "1.8.0",
+  "version": "1.8.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,8 +8,8 @@
     "compile": "electron-webpack",
     "dist": "npm run compile && electron-builder",
     "dist:dir": "npm run dist -- --dir -c.compression=store -c.mac.identity=null",
-    "publish": "npm run compile && electron-builder -p always",
-    "dist:lin": "npm run compile && electron-builder -l"
+    "publish": "npm run compile && electron-builder -wl -p always",
+    "dist:all": "npm run compile && electron-builder -wlm"
   },
   "repository": {
     "type": "git",
@@ -48,6 +48,8 @@
     "ytpl": "^0.1.14"
   },
   "build": {
-    "appId": "com.kornel.youtube"
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }
