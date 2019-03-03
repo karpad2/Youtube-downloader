@@ -61,8 +61,8 @@ export default class Listitem extends Component {
         quality: 'highest',
         filter: 'audio'
       };
-      if (!this.state.isDownloading) {
-        this.setState({isDownloading: !this.state.isDownloading});
+      if (!this.state.isDownloading) {        
+        this.setState({isDownloading: true});
         if (this.state.percent > 0) {
           if (selectedFormat == 'mp3') {
             this.audio.resume();
@@ -102,9 +102,10 @@ export default class Listitem extends Component {
             path = path.join("/") + "/";
           }
           var file = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
-          this.audio = ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
+          this.audio = ytdl.downloadFromInfo(this.state.info, options)
           .on('progress', (length, downloaded, totallength) => {
             this.setState({ percent: Math.round(downloaded / totallength * 100) })
+            //console.log((downloaded / 1024 / 1024).toFixed(2) + " Mb/" + (totallength / 1024 / 1024).toFixed(2) + " Mb");
           })
           if (selectedFormat == 'mp3') {
             ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
@@ -142,7 +143,7 @@ export default class Listitem extends Component {
     }
   }
   pause() {
-    this.setState({isDownloading: !this.state.isDownloading});
+    this.setState({isDownloading: false});
     if (this.state.selectedFormat == 'mp3') {
       this.audio.pause();
     }

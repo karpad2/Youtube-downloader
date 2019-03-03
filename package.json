@@ -46,10 +46,5 @@
     "source-map-support": "^0.5.10",
     "ytdl-core": "^0.29.1",
     "ytpl": "^0.1.14"
-  },
-  "build": {
-    "linux": {
-      "target": "AppImage"
-    }
   }
 }

@@ -10,9 +10,6 @@ import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, M
 import fs from 'fs';
 import Listitemfinished from '../components/Listitem/Listitemfinished';
 
-
-//TODO: Add playlist
-//TODO: Modal option window
 const style = createMuiTheme({
   overrides: {
     MuiDialog: {
