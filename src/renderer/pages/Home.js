@@ -10,9 +10,9 @@ import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, M
 import fs from 'fs';
 import Listitemfinished from '../components/Listitem/Listitemfinished';
 
-
 //TODO: Add playlist
 //TODO: Modal option window
+
 const style = createMuiTheme({
   overrides: {
     MuiDialog: {
@@ -151,6 +151,7 @@ export default class Home extends Component {
   handleClose() { this.setState({ open: false }) };
 
   componentDidMount() {
+    clipboard.clear();
     ipcRenderer.on('configPath', (event, arg) => {
       this.configPath = arg;
       var options = JSON.parse(fs.readFileSync(arg), 'utf8');
@@ -178,6 +179,7 @@ export default class Home extends Component {
           })
         }
         else this.updateLinks(text);
+        clipboard.clear();
       }
     }).startWatching();
   }

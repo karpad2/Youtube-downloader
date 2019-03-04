@@ -36,7 +36,7 @@ export default class Listitem extends Component {
       percent: 0,
       time: 0,
       videoformats: [],
-      selectedFormat: 'mp3',
+      selectedFormat: 'mp3'
     }
   }
 
@@ -57,12 +57,8 @@ export default class Listitem extends Component {
   mouseLeave() { this.setState({ isHovering: false }) }
   doDownload() {
     if (this.state.info != null) {
-      var options = {
-        quality: 'highest',
-        filter: 'audio'
-      };
       if (!this.state.isDownloading) {
-        this.setState({isDownloading: !this.state.isDownloading});
+        this.setState({isDownloading: true});
         if (this.state.percent > 0) {
           if (selectedFormat == 'mp3') {
             this.audio.resume();
@@ -75,6 +71,11 @@ export default class Listitem extends Component {
           }
         }
         else {
+          var options = {
+            quality: 'highest',
+            filter: 'audio',
+            highWaterMark: 1
+          };
           var {selectedFormat} = this.state;
           var path = this.props.options.path;
           if (process.platform === "win32") {
@@ -102,10 +103,11 @@ export default class Listitem extends Component {
             path = path.join("/") + "/";
           }
           var file = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
-          this.audio = ytdl.downloadFromInfo(this.state.info, { quality: 'highest', filter: 'audio'})
+          this.audio = ytdl.downloadFromInfo(this.state.info, options)
           .on('progress', (length, downloaded, totallength) => {
             this.setState({ percent: Math.round(downloaded / totallength * 100) })
           })
+          .on('error', (err) => console.log(err))
           if (selectedFormat == 'mp3') {
             ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
             .toFormat('mp3')
@@ -142,9 +144,10 @@ export default class Listitem extends Component {
     }
   }
   pause() {
-    this.setState({isDownloading: !this.state.isDownloading});
+    this.setState({isDownloading: false});
     if (this.state.selectedFormat == 'mp3') {
       this.audio.pause();
+      console.log(this.audio.isPaused());
     }
     else {
       if (this.video != null)
@@ -186,8 +189,8 @@ export default class Listitem extends Component {
           <Loading /> 
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
+          {isHovering && <div onClick={this.close} className='close'><FaWindowClose/></div>}
             <div className="img_container">
-              {isHovering && <div onClick={this.close} className='close'><FaWindowClose/></div>}
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
             </div>

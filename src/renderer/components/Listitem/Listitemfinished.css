@@ -47,7 +47,7 @@
 
 .close {
   position: absolute;
-  left: 5px;
+  right: 5px;
   top: 5px;
   color: #a8a8a8;
 }
@@ -104,6 +104,10 @@
   border-radius: 100%;
   height: 30px;
   width: 30px;
+}
+
+.play {
+  right: 90px;
 }
 
 .btnIcon svg{

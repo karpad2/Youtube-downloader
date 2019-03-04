@@ -47,7 +47,7 @@
 
 .close {
   position: absolute;
-  left: 5px;
+  right: 5px;
   top: 5px;
   color: #a8a8a8;
 }
@@ -110,7 +110,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%), rotate('45');
 }
 
 input[type=radio] {

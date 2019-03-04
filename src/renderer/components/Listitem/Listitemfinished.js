@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { FaFolder, FaMicrophone, FaWindowClose, FaUser } from 'react-icons/fa'
+import { FaFolder, FaMicrophone, FaWindowClose, FaUser, FaPlayCircle } from 'react-icons/fa'
 import './Listitemfinished.css';
 import ProgressBar from './progressBar';
 import {shell} from 'electron'
@@ -46,8 +46,8 @@ export default class Listitemfinished extends Component {
           <Loading /> 
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
+            {isHovering && <div onClick={this.destroy} className='close'><FaWindowClose/></div>}
             <div className="img_container">
-              {isHovering && <div onClick={this.destroy} className='close'><FaWindowClose/></div>}
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
             </div>
@@ -62,8 +62,17 @@ export default class Listitemfinished extends Component {
                 sqSize="45"
                 percentage={100}/>
             </div>
+            <div className="progressBar play">
+              <ProgressBar 
+                strokeWidth="5"
+                sqSize="45"
+                percentage={100}/>
+            </div>
               <div className="btnIcon" onClick={() => shell.showItemInFolder(path)}>
                 <FaFolder size={15}/>
+              </div>
+              <div className="btnIcon play" onClick={() => shell.openItem(path)}>
+                <FaPlayCircle size={20}/>
               </div>
           </div>
         )}
