@@ -9,7 +9,8 @@ import { ipcRenderer } from 'electron'
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, MuiThemeProvider, createMuiTheme } from '@material-ui/core';
 import fs from 'fs';
 import Listitemfinished from '../components/Listitem/Listitemfinished';
-
+//import {AutoSizer, List} from 'react-virtualized'
+//import Infinite from 'react-infinite'
 //TODO: Add playlist
 //TODO: Modal option window
 
@@ -69,7 +70,6 @@ const style = createMuiTheme({
     useNextVariants: true
   },
 });
-
 export default class Home extends Component {
   constructor(props) {
     super(props);
@@ -79,9 +79,12 @@ export default class Home extends Component {
     this.handleClose = this.handleClose.bind(this);
     this.saveConfig = this.saveConfig.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
+    this.addLink = this.addLink.bind(this);
     this.numDown = 3;
-    this.filterNum = 20;
+    this.filterNum = 1000;
     this.configPath = null;
+    this.links = [];
+    this.isLoading = false;
     this.state = {
       data: [],
       finished: [],
@@ -98,7 +101,7 @@ export default class Home extends Component {
     var options = {
       path: this.state.path
     };
-    this.setState({ 
+    this.setState({
       options: options
     });    
     fs.writeFileSync(this.configPath, JSON.stringify(options), 'utf8');
@@ -112,26 +115,37 @@ export default class Home extends Component {
   }
   updateLinks(link) {
     if (!this.state.data.some(e => e.link === link)) {
+      this.links = [...this.links, link];
+    }
+  }
+  addLink() {
+    if (this.links.length > 0) {
+      this.isLoading = true;
+      var links = [...this.links];
       var data = {
         ref: React.createRef(),
-        link: link
+        link: links[0]
       }
+      links.splice(0, 1);
+      this.links = [...links];
       this.setState({
         data: [...this.state.data, data]
       })
+      if (links.length > 0) setTimeout(this.addLink, 400)
+      else this.isLoading = false;
     }
   }
   deleteLink(key, info, path) {
     var { data } = this.state;
-    if (this.state.autoDownload)
-      for (var i = 0; i <= this.numDown; i++)
-        if (this.state.data[i] != null && !this.state.data[i].ref.current.state.isDownloading)
-          this.state.data[i].ref.current.doDownload();
     var arr = [...data];
     arr.splice(key, 1);
     this.setState({
       data: [...arr]
     })
+    if (this.state.autoDownload)
+      for (var i = 0; i < this.numDown; i++)
+        if (arr.data[i] != null && !arr.data[i].ref.current.state.isDownloading)
+          arr.data[i].ref.current.doDownload();
     if (info != null) {
       var finished = {
         ref: React.createRef(),
@@ -175,11 +189,13 @@ export default class Home extends Component {
                   list.items.forEach(link => {
                     this.updateLinks(link.url_simple)
                   })
+                  if (!this.isLoading) this.addLink();
                 }
               })
           })
         }
         else this.updateLinks(text);
+        if (!this.isLoading) this.addLink();
         clipboard.clear();
       }
     }).startWatching();

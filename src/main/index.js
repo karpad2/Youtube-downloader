@@ -98,7 +98,10 @@ else {
     mainWindow = new BrowserWindow({
       height: 800,
       width: 1200,
-      show: false
+      show: false,
+      webPreferences: {
+        nodeIntegrationInWorker: true
+      }
     });
     mainWindow.loadURL(url);
     mainWindow.on('closed', () => {

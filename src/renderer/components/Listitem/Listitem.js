@@ -58,6 +58,7 @@ export default class Listitem extends Component {
   doDownload() {
     if (this.state.info != null) {
       if (!this.state.isDownloading) {
+        this.setState({isDownloading: true});
         if (this.state.percent > 0) {
           if (selectedFormat == 'mp3') {
             this.audio.resume();
@@ -68,7 +69,6 @@ export default class Listitem extends Component {
             else
               this.audio.resume();
           }
-          this.setState({isDownloading: true});
         }
         else {
           var options = {
