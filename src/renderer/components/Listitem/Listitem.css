@@ -50,6 +50,7 @@
   right: 5px;
   top: 5px;
   color: #a8a8a8;
+  cursor: pointer;
 }
 
 .info {
@@ -110,7 +111,13 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%), rotate('45');
+  transform: translate(-50%, -50%);
+}
+
+.download svg{
+  transform: 
+    translate(-50%, -50%) 
+    rotate(90deg);
 }
 
 input[type=radio] {

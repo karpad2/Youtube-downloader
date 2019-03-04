@@ -170,11 +170,12 @@ export default class Home extends Component {
           link.forEach(data=>{
             if (data.includes('list') || text.includes("channel"))
               ytpl(text, {limit: this.filterNum}, (err, list) => {
-                if (err) throw err;
-                console.log(list);
-                list.items.forEach(link => {
-                  this.updateLinks(link.url_simple)
-                })
+                if (err) this.updateLinks(text);
+                else {
+                  list.items.forEach(link => {
+                    this.updateLinks(link.url_simple)
+                  })
+                }
               })
           })
         }

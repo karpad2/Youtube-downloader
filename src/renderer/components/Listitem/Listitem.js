@@ -4,7 +4,7 @@ import fs from 'fs'
 import './Listitem.css'
 import Loading from './Loading'
 import ProgressBar from './progressBar'
-import {FaMicrophone, FaUser, FaArrowDown, FaWindowClose, FaPauseCircle, FaPlayCircle} from 'react-icons/fa'
+import {FaMicrophone, FaUser, FaArrowDown, FaTimesCircle, FaPauseCircle, FaPlayCircle} from 'react-icons/fa'
 import ffmpegPath from 'ffmpeg-static-electron'
 import ffmpeg from 'fluent-ffmpeg'
 
@@ -58,7 +58,6 @@ export default class Listitem extends Component {
   doDownload() {
     if (this.state.info != null) {
       if (!this.state.isDownloading) {
-        this.setState({isDownloading: true});
         if (this.state.percent > 0) {
           if (selectedFormat == 'mp3') {
             this.audio.resume();
@@ -69,12 +68,13 @@ export default class Listitem extends Component {
             else
               this.audio.resume();
           }
+          this.setState({isDownloading: true});
         }
         else {
           var options = {
             quality: 'highest',
             filter: 'audio',
-            highWaterMark: 1
+            highWaterMark: 0
           };
           var {selectedFormat} = this.state;
           var path = this.props.options.path;
@@ -144,10 +144,8 @@ export default class Listitem extends Component {
     }
   }
   pause() {
-    this.setState({isDownloading: false});
     if (this.state.selectedFormat == 'mp3') {
       this.audio.pause();
-      console.log(this.audio.isPaused());
     }
     else {
       if (this.video != null)
@@ -155,6 +153,7 @@ export default class Listitem extends Component {
       else
         this.audio.pause();
     }
+    this.setState({isDownloading: false});
   }
 
   componentWillMount() {
@@ -189,7 +188,7 @@ export default class Listitem extends Component {
           <Loading /> 
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
-          {isHovering && <div onClick={this.close} className='close'><FaWindowClose/></div>}
+          {isHovering && <div onClick={this.close} className='close'><FaTimesCircle/></div>}
             <div className="img_container">
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
@@ -223,7 +222,7 @@ export default class Listitem extends Component {
               <div className="btnIcon" onClick={this.pause}>
                 <FaPauseCircle size={20}/>
               </div> :
-              <div className="btnIcon" onClick={this.doDownload}>
+              <div className="btnIcon download" onClick={this.doDownload}>
                 <FaPlayCircle size={20}/>
               </div>
             }

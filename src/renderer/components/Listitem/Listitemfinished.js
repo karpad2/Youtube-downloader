@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { FaFolder, FaMicrophone, FaWindowClose, FaUser, FaPlayCircle } from 'react-icons/fa'
+import { FaFolder, FaMicrophone, FaUser, FaPlayCircle, FaTimesCircle } from 'react-icons/fa'
 import './Listitemfinished.css';
 import ProgressBar from './progressBar';
 import {shell} from 'electron'
@@ -46,7 +46,7 @@ export default class Listitemfinished extends Component {
           <Loading /> 
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
-            {isHovering && <div onClick={this.destroy} className='close'><FaWindowClose/></div>}
+            {isHovering && <div onClick={this.destroy} className='close'><FaTimesCircle/></div>}
             <div className="img_container">
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
