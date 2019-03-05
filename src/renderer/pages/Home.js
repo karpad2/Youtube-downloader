@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import clipboard from 'electron-clipboard-extended'
 import Listitem from '../components/Listitem/Listitem'
 import { FaArrowDown, FaWindowClose, FaWindowRestore, FaWindowMinimize } from 'react-icons/fa'
+import {MdClearAll} from 'react-icons/md'
 import { IoIosOptions } from 'react-icons/io'
 import './Home.css'
 import ytpl from 'ytpl'
@@ -80,6 +81,7 @@ export default class Home extends Component {
     this.saveConfig = this.saveConfig.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
     this.addLink = this.addLink.bind(this);
+    this.clearList = this.clearList.bind(this);
     this.numDown = 3;
     this.filterNum = 1000;
     this.configPath = null;
@@ -97,6 +99,13 @@ export default class Home extends Component {
     }
   }
 
+  clearList() {
+    var data = this.state.data.filter(item => {
+      return item.ref.current.state.isDownloading
+    })
+    console.log(data);
+    this.setState({data: [...data], finished: []})
+  }
   saveConfig() {
     var options = {
       path: this.state.path
@@ -137,15 +146,15 @@ export default class Home extends Component {
   }
   deleteLink(key, info, path) {
     var { data } = this.state;
+    if (this.state.autoDownload)
+      for (var i = 0; i <= this.numDown; i++)
+        if (data[i] != undefined && !data[i].ref.current.state.isDownloading)
+          data[i].ref.current.doDownload();
     var arr = [...data];
     arr.splice(key, 1);
     this.setState({
       data: [...arr]
     })
-    if (this.state.autoDownload)
-      for (var i = 0; i < this.numDown; i++)
-        if (arr.data[i] != null && !arr.data[i].ref.current.state.isDownloading)
-          arr.data[i].ref.current.doDownload();
     if (info != null) {
       var finished = {
         ref: React.createRef(),
@@ -225,6 +234,10 @@ export default class Home extends Component {
           <div className="btnDownload">
             <FaArrowDown size={30} color={this.state.autoDownload ? '#eba576' : '#a8a8a8'} onClick={this.startAll}/>
             Auto
+          </div>
+          <div className="btnClear">
+            <MdClearAll size={30} onClick={this.clearList}/>
+            {finished.length + " / " + (data.length + finished.length)}
           </div>
         </div>
         <div className="items">

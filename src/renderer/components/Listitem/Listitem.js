@@ -144,6 +144,7 @@ export default class Listitem extends Component {
     }
   }
   pause() {
+    this.setState({isDownloading: false});
     if (this.state.selectedFormat == 'mp3') {
       this.audio.pause();
     }
@@ -153,7 +154,6 @@ export default class Listitem extends Component {
       else
         this.audio.pause();
     }
-    this.setState({isDownloading: false});
   }
 
   componentWillMount() {
