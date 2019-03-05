@@ -1,6 +1,6 @@
 {
   "name": "youtube-downloader",
-  "version": "1.9.1",
+  "version": "1.9.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "dist": "npm run compile && electron-builder",
     "dist:dir": "npm run dist -- --dir -c.compression=store -c.mac.identity=null",
     "publish": "npm run compile && electron-builder -wl -p always",
-    "dist:all": "npm run compile && electron-builder -wlm"
+    "dist:all": "npm run compile && electron-builder -wl"
   },
   "repository": {
     "type": "git",
@@ -43,7 +43,6 @@
     "react-dom": "^16.8.1",
     "react-icons": "^3.4.0",
     "react-progressbar.js": "^0.2.0",
-    "react-virtualized": "^9.21.0",
     "source-map-support": "^0.5.10",
     "ytdl-core": "^0.29.1",
     "ytpl": "^0.1.14"

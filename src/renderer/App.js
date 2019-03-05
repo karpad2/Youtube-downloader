@@ -3,6 +3,8 @@ import { ipcRenderer } from 'electron'
 import Home from './pages/Home';
 import Update from './pages/Update';
 import Logo from './components/Updater/Logo';
+import LogRocket from 'logrocket';
+LogRocket.init('wcv5cg/youtube-downloader');
 
 export default class App extends Component {
   constructor(props) {

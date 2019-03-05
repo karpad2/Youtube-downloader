@@ -36,6 +36,7 @@ build/Release
 node_modules/
 jspm_packages/
 dist/
+release/
 
 package-lock.json
 electron-builder.yml

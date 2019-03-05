@@ -18,6 +18,7 @@ else
 export default class Listitem extends Component {
   constructor(props) {
     super(props);
+    this.loaded = this.loaded.bind(this);
     this.destroy = this.destroy.bind(this);
     this.mouseHover = this.mouseHover.bind(this);
     this.mouseLeave = this.mouseLeave.bind(this);
@@ -28,12 +29,15 @@ export default class Listitem extends Component {
     this.close = this.close.bind(this);
     this.audio = null;
     this.video = null;
+    this.convert = null;
+    this.path;
     this.state = {
       link: this.props.link,
       info: null,
       isHovering: false,
       isDownloading: false,
-      percent: 0,
+      percentA: 0,
+      percentV: 0,
       time: 0,
       videoformats: [],
       selectedFormat: 'mp3'
@@ -51,6 +55,7 @@ export default class Listitem extends Component {
         .filter((v,i) => v !== "00" || i > 0)
         .join(":")
   }
+  loaded() { this.props.loaded(this.props.index) }
   close() { this.props.unmountMe(this.props.index) }
   destroy(path) { this.props.unmountMe(this.props.index, this.state.info, path) }
   mouseHover() { if (!this.state.isHovering) this.setState({ isHovering: true }) }
@@ -59,7 +64,7 @@ export default class Listitem extends Component {
     if (this.state.info != null) {
       if (!this.state.isDownloading) {
         this.setState({isDownloading: true});
-        if (this.state.percent > 0) {
+        if (this.state.percentA > 0 || this.state.percentV > 0) {
           if (selectedFormat == 'mp3') {
             this.audio.resume();
           }
@@ -102,42 +107,53 @@ export default class Listitem extends Component {
               path = path.split("/")
             path = path.join("/") + "/";
           }
-          var file = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
-          this.audio = ytdl.downloadFromInfo(this.state.info, options)
-          .on('progress', (length, downloaded, totallength) => {
-            this.setState({ percent: Math.round(downloaded / totallength * 100) })
-          })
-          .on('error', (err) => console.log(err))
+          var file = this.path = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
           if (selectedFormat == 'mp3') {
-            ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
-            .toFormat('mp3')
-            .audioBitrate('192')
-            .save(file+'.mp3');
+            if (!fs.existsSync(file + ".mp3")) {
+              this.audio = ytdl(this.state.link, options)
+              .on('progress', (length, downloaded, totallength) => {
+                this.setState({ percentA: Math.round(downloaded / totallength * 100) })
+              })
+              .on('error', (err) => console.log(err))
+              this.convert = ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
+              .toFormat('mp3')
+              .audioBitrate('192')
+              .save(file+'.mp3');
+            }
+            else this.destroy(file + ".mp3")
           }
           else {
-            ffmpeg(this.audio)
-            .toFormat('mp3')
-            .save(file+'_audio.mp3')
-            .on('end', () => {
-              options = {filter: (format) => format.quality_label === selectedFormat}
-              this.video = ytdl.downloadFromInfo(this.state.info, options)
+            if (!fs.existsSync(file + ".mp4")) {
+              this.audio = ytdl(this.state.link, options)
               .on('progress', (length, downloaded, totallength) => {
-                this.setState({ percent: Math.round(downloaded / totallength * 100) })
+                this.setState({ percentA: Math.round(downloaded / totallength * 100) })
               })
-              ffmpeg()
-              .input(this.video)
-              .videoCodec('copy')
-              .input(file + "_audio.mp3")
-              .audioCodec('copy')
-              .save(file + ".mp4")
+              .on('error', (err) => console.log(err))
+              this.convert = ffmpeg(this.audio)
+              .toFormat('mp3')
+              .save(file+'_audio.mp3')
               .on('end', () => {
-                fs.unlink(file + "_audio.mp3", err => {
-                  if(err) throw err;
+                options = {filter: (format) => format.quality_label === selectedFormat}
+                this.video = ytdl(this.state.link, options)
+                .on('progress', (length, downloaded, totallength) => {
+                  this.setState({ percentV: Math.round(downloaded / totallength * 100) })
+                })
+                this.convert = ffmpeg()
+                .input(this.video)
+                .videoCodec('copy')
+                .input(file + "_audio.mp3")
+                .audioCodec('copy')
+                .save(file + ".mp4")
+                .on('end', () => {
+                  fs.unlink(file + "_audio.mp3", err => {
+                    if(err) throw err;
+                  });
+                  this.savedPath = file + ".mp4"
+                  this.destroy(file + ".mp4");
                 });
-                this.savedPath = file + ".mp4"
-                this.destroy(file + ".mp4");
-              });
-            })
+              })
+            }
+            else this.destroy(file + ".mp4")
           }
         }
       }
@@ -161,6 +177,7 @@ export default class Listitem extends Component {
     ytdl.getInfo(link, (err, info) => {
       if (err) this.close();
       else {
+        this.loaded();
         var allformats = ytdl.filterFormats(info.formats, "videoonly");
         var formats = [];
         allformats.forEach(format=> {
@@ -175,8 +192,28 @@ export default class Listitem extends Component {
     })
   }
 
+  componentWillUnmount() {
+    if (this.audio != null) this.audio.destroy();
+    if (this.video != null) this.video.destroy();
+    if (this.convert != null) this.convert.kill();
+    if (this.state.percentA > 0 || this.state.percentV > 0) {
+      if (this.state.percentA != 100) {
+        if (this.state.selectedFormat != 'mp3')
+          fs.unlink(this.path + '_audio.mp3', err => console.log(err))
+        else 
+          fs.unlink(this.path + '.mp3', err => console.log(err))
+      }
+      else if (this.state.percentV != 100) {
+        if (this.state.selectedFormat != 'mp3') {
+          fs.unlink(this.path + '_audio.mp3', err => console.log(err))
+          fs.unlink(this.path + '.mp4', err => console.log(err))
+        }
+      }
+    }
+  }
+
   render() {
-    var {info, isHovering, isDownloading, percent, time, videoformats} = this.state;
+    var {info, isHovering, isDownloading, percentA, percentV, time, videoformats} = this.state;
     var title, time;
     if (info != null) {
       title = info.title.split('-');
@@ -216,7 +253,13 @@ export default class Listitem extends Component {
               <ProgressBar 
                 strokeWidth="5"
                 sqSize="45"
-                percentage={percent}/>
+                percentage={percentA}/>
+            </div>
+            <div className="progressBar">
+              <ProgressBar 
+                strokeWidth="5"
+                sqSize="60"
+                percentage={percentV}/>
             </div>
             {isDownloading ? 
               <div className="btnIcon" onClick={this.pause}>

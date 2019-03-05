@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, memo } from 'react'
 import clipboard from 'electron-clipboard-extended'
 import Listitem from '../components/Listitem/Listitem'
 import { FaArrowDown, FaWindowClose, FaWindowRestore, FaWindowMinimize } from 'react-icons/fa'
@@ -10,10 +10,6 @@ import { ipcRenderer } from 'electron'
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, MuiThemeProvider, createMuiTheme } from '@material-ui/core';
 import fs from 'fs';
 import Listitemfinished from '../components/Listitem/Listitemfinished';
-//import {AutoSizer, List} from 'react-virtualized'
-//import Infinite from 'react-infinite'
-//TODO: Add playlist
-//TODO: Modal option window
 
 const style = createMuiTheme({
   overrides: {
@@ -71,6 +67,7 @@ const style = createMuiTheme({
     useNextVariants: true
   },
 });
+
 export default class Home extends Component {
   constructor(props) {
     super(props);
@@ -82,14 +79,17 @@ export default class Home extends Component {
     this.deleteFile = this.deleteFile.bind(this);
     this.addLink = this.addLink.bind(this);
     this.clearList = this.clearList.bind(this);
-    this.numDown = 3;
+    this.loadedInfo = this.loadedInfo.bind(this);
+    this.numDown = 5;
     this.filterNum = 1000;
     this.configPath = null;
     this.links = [];
     this.isLoading = false;
     this.state = {
+      size: 0,
       data: [],
       finished: [],
+      queue: [],
       open: false,
       autoDownload: false,
       path: "D:\\Music\\Dev",
@@ -103,7 +103,6 @@ export default class Home extends Component {
     var data = this.state.data.filter(item => {
       return item.ref.current.state.isDownloading
     })
-    console.log(data);
     this.setState({data: [...data], finished: []})
   }
   saveConfig() {
@@ -123,25 +122,37 @@ export default class Home extends Component {
         this.state.data[i].ref.current.doDownload();
   }
   updateLinks(link) {
-    if (!this.state.data.some(e => e.link === link)) {
-      this.links = [...this.links, link];
-    }
+    if (!this.state.data.some(e => e.link === link))
+      this.setState({queue: [...this.state.queue, link]})
   }
   addLink() {
-    if (this.links.length > 0) {
-      this.isLoading = true;
-      var links = [...this.links];
+    var links = [...this.state.queue];
+    for (var i = 0; i < this.numDown; i++) {
+      if (links[0] != undefined && this.state.data.length < 50) {
+        var data = {
+          ref: React.createRef(),
+          link: links[0]
+        }
+        links.splice(0, 1);
+        this.setState({
+          data: [...this.state.data, data],
+          queue: [...links]
+        })
+      }
+    }
+  }
+  loadedInfo() {
+    if (this.state.queue[0] != undefined && this.state.data.length < 50) {
+      var links = [...this.state.queue]
       var data = {
         ref: React.createRef(),
         link: links[0]
       }
       links.splice(0, 1);
-      this.links = [...links];
       this.setState({
-        data: [...this.state.data, data]
+        data: [...this.state.data, data],
+        queue: [...links]
       })
-      if (links.length > 0) setTimeout(this.addLink, 400)
-      else this.isLoading = false;
     }
   }
   deleteLink(key, info, path) {
@@ -151,10 +162,18 @@ export default class Home extends Component {
         if (data[i] != undefined && !data[i].ref.current.state.isDownloading)
           data[i].ref.current.doDownload();
     var arr = [...data];
+    if (this.state.queue.length != 0) {
+      var links = [...this.state.queue]
+      var data = {
+        ref: React.createRef(),
+        link: links[0]
+      }
+      links.splice(0, 1);
+      this.setState({queue: [...links]})
+      arr = [...arr, data];
+    }
     arr.splice(key, 1);
-    this.setState({
-      data: [...arr]
-    })
+    this.setState({data: [...arr]})
     if (info != null) {
       var finished = {
         ref: React.createRef(),
@@ -195,16 +214,21 @@ export default class Home extends Component {
               ytpl(text, {limit: this.filterNum}, (err, list) => {
                 if (err) this.updateLinks(text);
                 else {
+                  var links = [];
                   list.items.forEach(link => {
-                    this.updateLinks(link.url_simple)
+                    if (!this.state.queue.includes(link.url_simple))
+                      links = [...links, link.url_simple]
                   })
-                  if (!this.isLoading) this.addLink();
+                  this.setState({queue: [...this.state.queue, ...links]})
+                  this.addLink();
                 }
               })
           })
         }
-        else this.updateLinks(text);
-        if (!this.isLoading) this.addLink();
+        else {
+          this.updateLinks(text);
+          this.addLink();
+        }
         clipboard.clear();
       }
     }).startWatching();
@@ -216,6 +240,7 @@ export default class Home extends Component {
 
   render() {
     var { data, finished, options, path } = this.state
+    var onQueue = this.state.queue.length;
     return (
       <div style={{height: '100%'}}>
         <div className="navbar">
@@ -237,17 +262,25 @@ export default class Home extends Component {
           </div>
           <div className="btnClear">
             <MdClearAll size={30} onClick={this.clearList}/>
-            {finished.length + " / " + (data.length + finished.length)}
+            {finished.length + " / " + (data.length + finished.length + onQueue)}
           </div>
         </div>
         <div className="items">
-          {data.map((link, i) => {
-            return <Listitem options={options} link={link.link} index={i} ref={link.ref} unmountMe={(index, info, path) => {this.deleteLink(index, info, path)}} key={link.link}/>
+        {data.map((link, i) => {
+            return (
+              <Listitem 
+                options={options} 
+                link={link.link} 
+                index={i} 
+                ref={link.ref}
+                loaded={(index) => {this.loadedInfo(index)}}
+                unmountMe={(index, info, path) => {this.deleteLink(index, info, path)}} 
+                key={link.link}/>)
           })}
           {finished.map((file, i) => {
             return <Listitemfinished path={file.path} info={file.info} index={i} ref={file.ref} unmountMe={(index) => this.deleteFile(index)} key={file.info.title}/>
           })}
-          {(data.length == 0 && finished.length == 0) && <div className="hint_text">Copy a youtube link</div>}
+        {(data.length == 0 && finished.length == 0) && <div className="hint_text">Copy a youtube link</div>}
         </div>
         <MuiThemeProvider theme={style}>
           <Dialog 
