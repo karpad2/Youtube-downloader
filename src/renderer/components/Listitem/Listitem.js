@@ -103,7 +103,7 @@ export default class Listitem extends Component {
             path = path.join("/") + "/";
           }
           var file = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
-          this.audio = ytdl.downloadFromInfo(this.state.info, options)
+          this.audio = ytdl(this.state.link, options)
           .on('progress', (length, downloaded, totallength) => {
             this.setState({ percent: Math.round(downloaded / totallength * 100) })
           })
@@ -120,7 +120,7 @@ export default class Listitem extends Component {
             .save(file+'_audio.mp3')
             .on('end', () => {
               options = {filter: (format) => format.quality_label === selectedFormat}
-              this.video = ytdl.downloadFromInfo(this.state.info, options)
+              this.video = ytdl(this.state.link, options)
               .on('progress', (length, downloaded, totallength) => {
                 this.setState({ percent: Math.round(downloaded / totallength * 100) })
               })

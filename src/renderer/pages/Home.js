@@ -82,7 +82,7 @@ export default class Home extends Component {
     this.deleteFile = this.deleteFile.bind(this);
     this.addLink = this.addLink.bind(this);
     this.clearList = this.clearList.bind(this);
-    this.numDown = 3;
+    this.numDown = 5;
     this.filterNum = 1000;
     this.configPath = null;
     this.links = [];
@@ -140,7 +140,7 @@ export default class Home extends Component {
       this.setState({
         data: [...this.state.data, data]
       })
-      if (links.length > 0) setTimeout(this.addLink, 400)
+      if (links.length > 0) setTimeout(this.addLink, 350)
       else this.isLoading = false;
     }
   }
