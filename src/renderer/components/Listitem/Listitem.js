@@ -114,7 +114,6 @@ export default class Listitem extends Component {
               .on('progress', (length, downloaded, totallength) => {
                 this.setState({ percentA: Math.round(downloaded / totallength * 100) })
               })
-              .on('error', (err) => console.log(err))
               this.convert = ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
               .toFormat('mp3')
               .audioBitrate('192')
@@ -183,6 +182,7 @@ export default class Listitem extends Component {
         allformats.forEach(format=> {
           if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
         })
+        //console.log(info);
         this.setState({ 
           info: info, 
           time: this.toHHMMSS(parseInt(info.length_seconds)), 
@@ -220,7 +220,7 @@ export default class Listitem extends Component {
       if (title[1] != undefined) title[1] = title[1].trim();
     }
     return (
-      <div className="container">
+      <div style={{display: this.props.display}} className="container">
         {info == null ? (
           <Loading /> 
         ) : (
