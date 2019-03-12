@@ -13,7 +13,6 @@ if (isDevelopment)
   ffmpeg.setFfmpegPath(ffmpegPath.path);
 else
   ffmpeg.setFfmpegPath(ffmpegPath.path.replace("app.asar", "app.asar.unpacked"));
-//TODO: MP3 selectable bitrate
 
 export default class Listitem extends Component {
   constructor(props) {

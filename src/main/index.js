@@ -3,15 +3,20 @@ import { autoUpdater } from 'electron-updater'
 const isDevelopment = process.env.NODE_ENV !== 'production';
 import fs from 'fs'
 
-var path = app.getPath('appData') + '\\youtube-downloader\\config.json';
-if (isDevelopment) path += "config.json"
-else path += "config_dev.json"
+var path = app.getPath('appData');
+if (process.platform === 'win32')
+  path += '\\youtube-downloader\\'
+else
+  path += '/youtube-downloader/'
 
-if (!fs.existsSync(path)) {
+if (!fs.existsSync(path + "/config.json")) {
   var options = {
-    path: app.getPath('music')
+    path: app.getPath('music'),
+    numDown: 3,
+    listNum: 20,
+    filterNum: 200,
   }
-  fs.writeFileSync(path, JSON.stringify(options), 'utf8');
+  fs.writeFileSync(path + "/config.json", JSON.stringify(options), 'utf8');
 }
 
 let mainWindow;

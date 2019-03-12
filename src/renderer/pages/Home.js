@@ -9,7 +9,7 @@ import {
   FaTasks,
   FaFolder
 } from 'react-icons/fa'
-import {MdClearAll} from 'react-icons/md'
+import {MdClearAll, MdContactMail} from 'react-icons/md'
 import { IoIosOptions } from 'react-icons/io'
 import './Home.css'
 import ytpl from 'ytpl'
@@ -28,6 +28,7 @@ import {
 } from '@material-ui/core';
 import fs from 'fs';
 import Listitemfinished from '../components/Listitem/Listitemfinished';
+const {dialog} = require('electron').remote;
 
 const tabStyle = createMuiTheme({
   overrides: {
@@ -87,9 +88,9 @@ const style = createMuiTheme({
           '&&&&:hover:before': {
             borderBottom: '1px solid #eba576'
           }
-        }
+        },
+        display: 'block'
       },
-      
     },
     MuiButton: {
       text: {
@@ -133,28 +134,45 @@ export default class Home extends Component {
     this.addLink = this.addLink.bind(this);
     this.clearList = this.clearList.bind(this);
     this.loadedInfo = this.loadedInfo.bind(this);
+    this.openFileDialog = this.openFileDialog.bind(this);
     this.scrollBar = React.createRef();
-    this.numDown = 5;
-    this.listNum = 20;
-    this.filterNum = 1000;
     this.configPath = null;
     this.links = [];
     this.isLoading = false;
     this.state = {
+      numDown: 5,
+      listNum: 20,
+      filterNum: 1000,
       value: 0,
-      size: 0,
       data: [],
       finished: [],
       queue: [],
       open: false,
       autoDownload: false,
-      path: "D:\\Music\\Dev",
+      path: "/home/kornel/Music/dev",
       options: {
-        path: "D:\\Music\\Dev"
+        path: "/home/kornel/Music/dev"
       }
     }
   }
 
+  openFileDialog() {
+    var options = {
+      title: "Change save location",
+      defaultPath: this.state.options.path,
+      properties:["openDirectory"]
+    }
+    dialog.showOpenDialog(options, (path) => {
+      if (path[0] !== undefined) {
+        this.setState({
+          path: path[0],
+          options: {
+            path: path[0]
+          }
+        })
+      }
+    });
+  }
   handleChange = (event, value) => {
     this.setState({ value });
   }
@@ -170,24 +188,29 @@ export default class Home extends Component {
   }
   saveConfig() {
     var options = {
+      numDown: this.state.numDown,
+      listNum: this.state.listNum,
+      filterNum: this.state.filterNum,
       path: this.state.path
     };
     this.setState({
-      options: options
+      options: { 
+        path: options.path
+      }
     });    
-    fs.writeFileSync(this.configPath, JSON.stringify(options), 'utf8');
+    fs.writeFileSync(this.configPath + "config.json", JSON.stringify(options), 'utf8');
     this.handleClose()
   }
   startAll() {
     this.setState({autoDownload: !this.state.autoDownload})
-    for (var i = 0; i < this.numDown; i++)
+    for (var i = 0; i < this.state.numDown; i++)
       if (this.state.data[i] != null)
         this.state.data[i].ref.current.doDownload();
   }
   addLink() {
     var links = [...this.state.queue];
-    for (var i = 0; i < this.numDown; i++) {
-      if (links[0] != undefined && this.state.data.length < this.listNum) {
+    for (var i = 0; i < this.state.numDown; i++) {
+      if (links[0] != undefined && this.state.data.length < this.state.listNum) {
         var data = {
           ref: React.createRef(),
           link: links[0]
@@ -201,7 +224,7 @@ export default class Home extends Component {
     }
   }
   loadedInfo() {
-    if (this.state.queue[0] != undefined && this.state.data.length < this.listNum) {
+    if (this.state.queue[0] != undefined && this.state.data.length < this.state.listNum) {
       var links = [...this.state.queue]
       var data = {
         ref: React.createRef(),
@@ -217,11 +240,11 @@ export default class Home extends Component {
   deleteLink(key, info, path) {
     var { data } = this.state;
     if (this.state.autoDownload)
-      for (var i = 0; i <= this.numDown; i++)
+      for (var i = 0; i <= this.state.numDown; i++)
         if (data[i] != undefined && !data[i].ref.current.state.isDownloading)
           data[i].ref.current.doDownload();
     var arr = [...data];
-    if (this.state.queue.length != 0 && data.length < this.listNum) {
+    if (this.state.queue.length != 0 && data.length < this.state.listNum) {
       var links = [...this.state.queue]
       var data = {
         ref: React.createRef(),
@@ -255,11 +278,17 @@ export default class Home extends Component {
     clipboard.clear();
     ipcRenderer.on('configPath', (event, arg) => {
       this.configPath = arg;
-      var options = JSON.parse(fs.readFileSync(arg), 'utf8');
+      var options = JSON.parse(fs.readFileSync(arg + "config.json"), 'utf8');
       this.setState({
         path: options.path,
-        options: options
+        numDown: options.numDown != undefined ? options.numDown : this.state.numDown,
+        listNum: options.listNum != undefined ? options.listNum : this.state.listNum,
+        filterNum: options.filterNum != undefined ? options.filterNum : this.state.filterNum,
+        options: {
+          path: options.path
+        }
       })
+      this.addLink();
     })
     clipboard.on('text-changed', () => {
       var regExp = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//;
@@ -270,7 +299,7 @@ export default class Home extends Component {
         if (text.includes("list") || text.includes("channel")) {
           link.forEach(data=>{
             if (data.includes('list') || text.includes("channel"))
-              ytpl(text, {limit: this.filterNum}, (err, list) => {
+              ytpl(text, {limit: this.state.filterNum}, (err, list) => {
                 if (err) this.updateLinks(text);
                 else {
                   var links = [];
@@ -295,8 +324,8 @@ export default class Home extends Component {
     }).startWatching();
     this.scrollBar.current.addEventListener('scroll', ()=> {
       var node = this.scrollBar.current;
-      if (node.scrollHeight - node.scrollTop === node.clientHeight && this.state.data.length > this.listNum - 1 && this.state.value !== 1) {
-        for (var i = 0; i < this.numDown; i++) {
+      if (node.scrollHeight - node.scrollTop === node.clientHeight && this.state.data.length > this.state.listNum - 1 && this.state.value !== 1) {
+        for (var i = 0; i < this.state.numDown; i++) {
           if (this.state.queue[0] != undefined) {
             var links = [...this.state.queue]
             var data = {
@@ -312,10 +341,6 @@ export default class Home extends Component {
         }
       }    
     })
-  }
-
-  componentWillUnmount() {
-    clipboard.stopWatching();
   }
 
   render() {
@@ -388,19 +413,60 @@ export default class Home extends Component {
           <Dialog 
             open={this.state.open}
             onClose={this.handleClose}
+            fullWidth
+            maxWidth="sm"
             aria-labelledby="form-dialog-title"
             >
             <DialogTitle id="form-dialog-title">Options</DialogTitle>
             <DialogContent>
-              <TextField 
-                autoFocus
-                margin="dense"
-                id="path"
-                label="Download path"
-                type="text"
-                value={path}
-                onChange={(event) => this.setState({ path: event.target.value })}
-              />
+              <div className="inputContainer">
+                <TextField 
+                  autoFocus
+                  fullWidth
+                  margin="dense"
+                  id="path"
+                  label="Download path"
+                  InputProps={{
+                    style:{
+                      paddingRight: '20px'
+                  }}}
+                  type="text"
+                  value={path}
+                  onChange={(event) => this.setState({ path: event.target.value })}
+                />
+                <div className="openFileDialog" onClick={this.openFileDialog}><FaFolder /></div>
+                <TextField
+                  id="standard-number"
+                  label="Parallel download number"
+                  value={this.state.numDown}
+                  onChange={(event)=>this.setState({numDown: event.target.value})}
+                  type="number"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  margin="normal"
+                />
+                <TextField
+                  id="standard-number"
+                  label="Visible item number"
+                  value={this.state.listNum}
+                  onChange={(event)=>this.setState({listNum: event.target.value})}                  type="number"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  margin="normal"
+                />
+                <TextField
+                  id="standard-number"
+                  label="Youtube playlist limit"
+                  value={this.state.filterNum}
+                  onChange={(event)=>this.setState({filterNum: event.target.value})}                  type="number"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  margin="normal"
+                />
+              </div>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => { this.setState({ path: options.path }); this.handleClose()}}>

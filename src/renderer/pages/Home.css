@@ -124,3 +124,19 @@
 	transform: translate(-50%, -50%);
 	cursor: pointer;
 }
+
+.inputContainer {
+	position: relative;
+}
+
+.openFileDialog {
+	position: absolute;
+	right: 0;
+	top: 30px;
+	transform: translate(0, -0%);
+}
+
+.openFileDialog:hover {
+	color: #eba576;
+	cursor: pointer;
+}
