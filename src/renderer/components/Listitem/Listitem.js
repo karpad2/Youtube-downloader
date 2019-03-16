@@ -4,9 +4,12 @@ import fs from 'fs'
 import './Listitem.css'
 import Loading from './Loading'
 import ProgressBar from './progressBar'
-import {FaMicrophone, FaUser, FaArrowDown, FaTimesCircle, FaPauseCircle, FaPlayCircle} from 'react-icons/fa'
+import {FaMicrophone, FaUser, FaTimesCircle, FaPauseCircle, FaPlayCircle, FaInfoCircle} from 'react-icons/fa'
 import ffmpegPath from 'ffmpeg-static-electron'
 import ffmpeg from 'fluent-ffmpeg'
+import { Dialog, MuiThemeProvider, DialogTitle, DialogContent, DialogActions, Button, DialogContentText } from '@material-ui/core';
+import {style as style1} from '../../style/darkTheme'
+import {style as style2} from '../../style/lightTheme'
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 if (isDevelopment)
@@ -26,11 +29,13 @@ export default class Listitem extends Component {
     this.chooseFormat = this.chooseFormat.bind(this);
     this.pause = this.pause.bind(this);
     this.close = this.close.bind(this);
+    this.handleClose = this.handleClose.bind(this);
     this.audio = null;
     this.video = null;
     this.convert = null;
     this.path;
     this.state = {
+      open: false,
       link: this.props.link,
       info: null,
       isHovering: false,
@@ -43,6 +48,7 @@ export default class Listitem extends Component {
     }
   }
 
+  handleClose() { this.setState({open: false}) }
   chooseFormat(event) { this.setState({ selectedFormat: event.target.value }) }
   toHHMMSS(secs) {
     var sec_num = parseInt(secs, 10)    
@@ -75,6 +81,8 @@ export default class Listitem extends Component {
           }
         }
         else {
+          if (this.audio != null) this.audio.destroy();
+          if (this.video != null) this.video.destroy();
           if (this.convert != null) this.convert.kill();
           var options = {
             quality: 'highest',
@@ -113,7 +121,7 @@ export default class Listitem extends Component {
             if (!fs.existsSync(file + ".mp3")) {
               this.audio = ytdl(this.state.link, options)
               .on('progress', (length, downloaded, totallength) => {
-                if (!this.state.isDownloading)
+                if (!this.state.isDownloading && this.convert != null)
                   this.audio.pause();
                 this.setState({ percentA: Math.round(downloaded / totallength * 100) })
               })
@@ -189,7 +197,7 @@ export default class Listitem extends Component {
         allformats.forEach(format=> {
           if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
         })
-        //console.log(info);
+        console.log(info);
         this.setState({ 
           info: info, 
           time: this.toHHMMSS(parseInt(info.length_seconds)), 
@@ -227,6 +235,7 @@ export default class Listitem extends Component {
       if (title[1] != undefined) title[1] = title[1].trim();
     }
     var colors = this.props.style;
+    var style = this.props.theme === 1 ? style2 : style1;
     return (
       <div style={{display: this.props.display, backgroundColor: colors.background, color: colors.color, boxShadow: '0px 0px 2px 2px ' + colors.shadow}} className="container">
         {info == null ? (
@@ -234,6 +243,7 @@ export default class Listitem extends Component {
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
           {isHovering && <div onClick={this.close} style={{color: colors.color}} className='close'><FaTimesCircle/></div>}
+          {isHovering && <div onClick={()=>this.setState({open: true})} style={{color: colors.color}} className='btnInfo'><FaInfoCircle/></div>}
             <div className="img_container">
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
@@ -281,6 +291,29 @@ export default class Listitem extends Component {
             }
           </div>
         )}
+        <MuiThemeProvider theme={style}>
+          <Dialog 
+            open={this.state.open}
+            onClose={this.handleClose}
+            maxWidth="xl"
+            aria-labelledby="form-dialog-title"
+          >
+            <DialogTitle id="form-dialog-title">Track informations</DialogTitle>
+            <DialogContent>
+              {info == null ? "Nincs adat" : (
+                <DialogContentText>
+                  {`Title: ${info.title}`}<br/>
+                  {`Author: ${info.author.name}`}<br/>
+                </DialogContentText>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleClose}>
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </MuiThemeProvider>
       </div>
     )
   }

@@ -59,6 +59,13 @@
   cursor: pointer;
 }
 
+.btnInfo {
+  position: absolute;
+  right: 5px;
+  bottom: 2.5px;
+  cursor: pointer;
+}
+
 .info {
   height: 100%;
   float: left;

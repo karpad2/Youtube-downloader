@@ -1,4 +1,4 @@
-import React, { Component, memo } from 'react'
+import React, { Component} from 'react'
 import clipboard from 'electron-clipboard-extended'
 import Listitem from '../components/Listitem/Listitem'
 import { 
@@ -7,9 +7,9 @@ import {
   FaWindowRestore, 
   FaWindowMinimize,
   FaTasks,
-  FaFolder
+  FaFolder,
 } from 'react-icons/fa'
-import {MdClearAll, MdContactMail} from 'react-icons/md'
+import {MdClearAll} from 'react-icons/md'
 import { IoIosOptions } from 'react-icons/io'
 import './Home.css'
 import ytpl from 'ytpl'
@@ -150,7 +150,7 @@ export default class Home extends Component {
     else if (this.state.value === 1)
       this.setState({finished: []})
   }
-  saveConfig() {
+  saveConfig(saved) {
     var options = {
       numDown: this.state.numDown,
       listNum: this.state.listNum,
@@ -163,7 +163,7 @@ export default class Home extends Component {
       options: options
     });
     fs.writeFileSync(this.configPath + "config.json", JSON.stringify(options), 'utf8');
-    this.handleClose()
+    this.handleClose(saved)
   }
   startAll() {
     if (!this.state.autoDownload)
@@ -237,9 +237,10 @@ export default class Home extends Component {
       finished: [...arr]
     })
   }
-  handleClose() { 
+  handleClose(saved) { 
     this.setState({ open: false })
-    //this.setState(this.state.options); 
+    if (!saved)
+      this.setState(this.state.options); 
   };
   handleChooseClose() {
     this.setState({choose: false});
@@ -398,7 +399,7 @@ export default class Home extends Component {
           </Dialog>
           <Dialog 
             open={this.state.open}
-            onClose={this.handleClose}
+            onClose={() => this.handleClose(false)}
             fullWidth
             maxWidth="sm"
             aria-labelledby="form-dialog-title"
@@ -495,19 +496,19 @@ export default class Home extends Component {
                 <FormControlLabel
                     control={
                       <Checkbox
-                        checked={true}
+                        checked={false}
                         value="checkedG"
                       />
                     }
-                    label="Keep audio after video download finished"
+                    label="Keep audio after video download finished (Isn't work right now)"
                   />
               </div>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => { this.setState(options); this.handleClose()}}>
+              <Button onClick={() => { this.setState(options); this.handleClose(false)}}>
                 Close
               </Button>
-              <Button onClick={() => this.saveConfig()}>
+              <Button onClick={() => this.saveConfig(true)}>
                 Save
               </Button>
             </DialogActions>
