@@ -19,15 +19,15 @@
 }
 
 .lScroll::-webkit-scrollbar {
-	background-color: #a8a8a8;
+	background-color: #cccccc;
 }
 
 .lScroll::-webkit-scrollbar-thumb {
-	background: #563D7C; 
+	background: #A8A8A8; 
 }
 
 .lScroll::-webkit-scrollbar-thumb:hover {
-	background: #8B7AA6; 
+	background: #cc0000; 
 }
 
 .hint_text {
