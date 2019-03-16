@@ -51,6 +51,10 @@ export default class Home extends Component {
     this.clearList = this.clearList.bind(this);
     this.loadedInfo = this.loadedInfo.bind(this);
     this.openFileDialog = this.openFileDialog.bind(this);
+    this.addOne = this.addOne.bind(this);
+    this.addList = this.addList.bind(this);
+    this.handleChooseClose = this.handleChooseClose.bind(this);
+    this.link = null;
     this.scrollBar = React.createRef();
     this.configPath = null;
     this.links = [];
@@ -66,6 +70,7 @@ export default class Home extends Component {
       finished: [],
       queue: [],
       open: false,
+      choose: false,
       autoDownload: false,
       path: "/home/kornel/Music/dev",
       options: {
@@ -79,6 +84,37 @@ export default class Home extends Component {
     }
   }
 
+  addOne() {
+    var text = this.link;
+    if (!this.state.data.some(e => e.link === text))
+      this.setState({queue: [...this.state.queue, text]})
+    this.addLink();
+    this.link = null;
+  }
+  addList() {
+    var text = this.link;
+    var link = text.split('&');
+    link.forEach(data=>{
+      if (data.includes('list') || text.includes("channel"))
+        ytpl(text, {limit: this.state.filterNum}, (err, list) => {
+          if (err) {
+            if (!this.state.data.some(e => e.link === text))
+              this.setState({queue: [...this.state.queue, text]})
+            this.addLink();
+          }
+          else {
+            var links = [];
+            list.items.forEach(link => {
+              if (!this.state.queue.includes(link.url_simple) && !this.state.data.some(e => e.link === link.url_simple))
+                links = [...links, link.url_simple]
+            })
+            this.setState({queue: [...this.state.queue, ...links]})
+            this.addLink();
+          }
+        })
+    })
+    this.link = null;
+  }
   openFileDialog() {
     var options = {
       title: "Change save location",
@@ -109,7 +145,7 @@ export default class Home extends Component {
       var data = this.state.data.filter(item => {
         return item.ref.current.state.isDownloading
       })
-      this.setState({data: [...data]})
+      this.setState({data: [...data], queue: []})
     }
     else if (this.state.value === 1)
       this.setState({finished: []})
@@ -124,23 +160,17 @@ export default class Home extends Component {
       theme: this.state.theme
     };
     this.setState({
-      options: { 
-        path: options.path,
-        bitrate: options.bitrate,
-        theme: options.theme,
-        numDown: options.numDown,
-        listNum: options.listNum,
-        filterNum: options.filterNum,
-      }
+      options: options
     });
     fs.writeFileSync(this.configPath + "config.json", JSON.stringify(options), 'utf8');
     this.handleClose()
   }
   startAll() {
+    if (!this.state.autoDownload)
+      for (var i = 0; i < this.state.numDown; i++)
+        if (this.state.data[i] != null)
+          this.state.data[i].ref.current.doDownload();
     this.setState({autoDownload: !this.state.autoDownload})
-    for (var i = 0; i < this.state.numDown; i++)
-      if (this.state.data[i] != null)
-        this.state.data[i].ref.current.doDownload();
   }
   addLink() {
     var links = [...this.state.queue];
@@ -176,7 +206,7 @@ export default class Home extends Component {
     var { data } = this.state;
     if (this.state.autoDownload)
       for (var i = 0; i <= this.state.numDown; i++)
-        if (data[i] != undefined && !data[i].ref.current.state.isDownloading)
+        if (data[i] != undefined)
           data[i].ref.current.doDownload();
     var arr = [...data];
     if (this.state.queue.length != 0 && data.length < this.state.listNum) {
@@ -207,7 +237,14 @@ export default class Home extends Component {
       finished: [...arr]
     })
   }
-  handleClose() { this.setState({ open: false }) };
+  handleClose() { 
+    this.setState({ open: false })
+    //this.setState(this.state.options); 
+  };
+  handleChooseClose() {
+    this.setState({choose: false});
+    this.link = null;
+  }
 
   componentDidMount() {
     clipboard.clear();
@@ -232,24 +269,15 @@ export default class Home extends Component {
       var text = clipboard.readText()
       var link = text.match(regExp);
       if (link != null) {
-        link = text.split('&');
         if (text.includes("list") || text.includes("channel")) {
-          link.forEach(data=>{
-            if (data.includes('list') || text.includes("channel"))
-              ytpl(text, {limit: this.state.filterNum}, (err, list) => {
-                if (err) this.updateLinks(text);
-                else {
-                  var links = [];
-                  //console.log(list);
-                  list.items.forEach(link => {
-                    if (!this.state.queue.includes(link.url_simple))
-                      links = [...links, link.url_simple]
-                  })
-                  this.setState({queue: [...this.state.queue, ...links]})
-                  this.addLink();
-                }
-              })
-          })
+          this.link = text;
+          if (!text.includes("watch")) {
+            this.addList();
+          }
+          else {
+            this.setState({choose: true});
+            ipcRenderer.send('window');
+          }
         }
         else {
           if (!this.state.data.some(e => e.link === text))
@@ -281,10 +309,10 @@ export default class Home extends Component {
   }
 
   render() {
-    var { data, finished, options, path, value } = this.state
+    var { data, finished, options, path, value, theme } = this.state
     var onQueue = this.state.queue.length;
-    var colors = this.state.theme === 1 ? light : dark;
-    var style = this.state.theme === 1 ? style2 : style1;
+    var colors = theme === 0 ? dark : light;
+    var style = theme === 0 ? style1 : style2;
     return (
       <div style={{height: '100%'}}>
         <div className="navbar" style={{backgroundColor:colors.background, color: colors.color}}>
@@ -341,6 +369,7 @@ export default class Home extends Component {
                 options={options} 
                 link={link.link} 
                 index={i} 
+                theme={theme}
                 style={colors}
                 ref={link.ref}
                 loaded={(index) => {this.loadedInfo(index)}}
@@ -351,6 +380,22 @@ export default class Home extends Component {
         {(finished.length == 0 && value === 1) && <div className="hint_text">No file downloaded</div>}
         </div>
         <MuiThemeProvider theme={style}>
+          <Dialog 
+            open={this.state.choose}
+            onClose={this.handleChooseClose}
+            maxWidth="sm"
+            aria-labelledby="choose-dialog-title"
+          >
+            <DialogTitle id="choose-dialog-title">Download</DialogTitle>
+            <DialogActions>
+              <Button onClick={() => { this.addOne(); this.handleChooseClose()}}>
+                Only firts
+              </Button>
+              <Button onClick={() => { this.addList(); this.handleChooseClose()}}>
+                Playlist
+              </Button>
+            </DialogActions>
+          </Dialog>
           <Dialog 
             open={this.state.open}
             onClose={this.handleClose}
@@ -454,7 +499,7 @@ export default class Home extends Component {
                         value="checkedG"
                       />
                     }
-                    label="Remove audio after video download finished"
+                    label="Keep audio after video download finished"
                   />
               </div>
             </DialogContent>
@@ -462,7 +507,7 @@ export default class Home extends Component {
               <Button onClick={() => { this.setState(options); this.handleClose()}}>
                 Close
               </Button>
-              <Button onClick={this.saveConfig}>
+              <Button onClick={() => this.saveConfig()}>
                 Save
               </Button>
             </DialogActions>

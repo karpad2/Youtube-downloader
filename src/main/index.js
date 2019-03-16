@@ -59,7 +59,7 @@ if (!isDevelopment) {
 
   autoUpdater.on('update-not-available', () => {
     mainWindow = new BrowserWindow({
-      height: 600,
+      height: 630,
       width: 875,
       frame: false,
       show: false,
@@ -85,6 +85,9 @@ if (!isDevelopment) {
     ipcMain.on('minimizeWindow', () => mainWindow.minimize())
     ipcMain.on('openFolder', (event, arg) => {
       shell.showItemInFolder(arg);
+    })
+    ipcMain.on('window', () => {
+      mainWindow.focus();
     })
   })
 
@@ -117,7 +120,7 @@ else {
     mainWindow.webContents.openDevTools();
     mainWindow.webContents.once('dom-ready', () => {
       mainWindow.show();
-      mainWindow.webContents.send('updateReady', 50);
+      mainWindow.webContents.send('noUpdateReady');
       mainWindow.webContents.send('configPath', path)
     })
     ipcMain.on('closeWindow', () => mainWindow.close())
@@ -128,5 +131,8 @@ else {
         mainWindow.maximize();
     })
     ipcMain.on('minimizeWindow', () => mainWindow.minimize())
+    ipcMain.on('window', () => {
+      mainWindow.focus();
+    })
   });
 }

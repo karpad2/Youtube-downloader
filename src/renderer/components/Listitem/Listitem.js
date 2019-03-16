@@ -242,7 +242,7 @@ export default class Listitem extends Component {
               {title[1] != undefined && <div className="info_div"><FaMicrophone /><div>{title[1]}</div></div>}
               {title[1] != undefined && <br/>}
               <div className="info_div"><FaUser /><div>{title[0]}</div></div><br/>
-              <div className={"radio-group " + (this.props.options.theme === 1 ? 'linput' : 'dinput')} style={{backgroundColor: colors.background, boxShadow: '0 0 2px 2px ' + colors.shadow}}>
+              <div className={"radio-group " + (this.props.theme === 1 ? 'linput' : 'dinput')} style={{backgroundColor: colors.background, boxShadow: '0 0 2px 2px ' + colors.shadow}}>
                 <div>
                   <input type="radio" onClick={this.chooseFormat} value={"mp3"} name={`${this.props.index}type`} className="btnRadio" id={`${this.props.index}option`} defaultChecked />
                   <label htmlFor={`${this.props.index}option`}>MP3</label>

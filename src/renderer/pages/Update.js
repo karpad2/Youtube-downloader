@@ -29,7 +29,7 @@ export default class Update extends Component {
       <div className="update" style={{backgroundColor: colors.background2, color: colors.color}}>
         <div className="update_container">
           <Logo color={colors.secondary}/>
-          <Progressbar colors={colors} percent={50} />
+          <Progressbar colors={colors} percent={this.props.percent} />
         </div>
       </div>
     )
