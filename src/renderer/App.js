@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { ipcRenderer } from 'electron'
 import Home from './pages/Home';
 import Update from './pages/Update';
-import Logo from './components/Updater/Logo';
 
 export default class App extends Component {
   constructor(props) {
@@ -12,7 +11,7 @@ export default class App extends Component {
     this.state = {
       loading: true,
       update: false,
-      percent: 0
+      percent: 0,
     }
   }
 
@@ -31,13 +30,16 @@ export default class App extends Component {
     ipcRenderer.on('noUpdateReady', () => {
       this.loadApp();
     });
+    
   }
 
   render() {
-    var {update, percent, loading} = this.state;
+    var {update, percent, loading, options} = this.state;
     return (
       <div style={{height: '100%'}}>
-        {(!loading && update) ? <Update percent={percent}/> : <Home />}
+        {(!loading && update) ? 
+        <Update percent={percent}/> :
+        <Home />}
       </div>
     )
   }

@@ -75,6 +75,7 @@ export default class Listitem extends Component {
           }
         }
         else {
+          if (this.convert != null) this.convert.kill();
           var options = {
             quality: 'highest',
             filter: 'audio',
@@ -82,6 +83,7 @@ export default class Listitem extends Component {
           };
           var {selectedFormat} = this.state;
           var path = this.props.options.path;
+          var audioBitrate = this.props.options.bitrate;
           if (process.platform === "win32") {
             if (!fs.existsSync(path)) {
               path = path.split("\\")
@@ -111,11 +113,13 @@ export default class Listitem extends Component {
             if (!fs.existsSync(file + ".mp3")) {
               this.audio = ytdl(this.state.link, options)
               .on('progress', (length, downloaded, totallength) => {
+                if (!this.state.isDownloading)
+                  this.audio.pause();
                 this.setState({ percentA: Math.round(downloaded / totallength * 100) })
               })
               this.convert = ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
               .toFormat('mp3')
-              .audioBitrate('192')
+              .audioBitrate(audioBitrate)
               .save(file+'.mp3');
             }
             else this.destroy(file + ".mp3")
@@ -124,6 +128,8 @@ export default class Listitem extends Component {
             if (!fs.existsSync(file + ".mp4")) {
               this.audio = ytdl(this.state.link, options)
               .on('progress', (length, downloaded, totallength) => {
+                if (!this.state.isDownloading)
+                  this.audio.pause();
                 this.setState({ percentA: Math.round(downloaded / totallength * 100) })
               })
               .on('error', (err) => console.log(err))
@@ -134,6 +140,8 @@ export default class Listitem extends Component {
                 options = {filter: (format) => format.quality_label === selectedFormat}
                 this.video = ytdl(this.state.link, options)
                 .on('progress', (length, downloaded, totallength) => {
+                  if (!this.state.isDownloading)
+                    this.video.pause();
                   this.setState({ percentV: Math.round(downloaded / totallength * 100) })
                 })
                 this.convert = ffmpeg()
@@ -218,13 +226,14 @@ export default class Listitem extends Component {
       title = info.title.split('-');
       if (title[1] != undefined) title[1] = title[1].trim();
     }
+    var colors = this.props.style;
     return (
-      <div style={{display: this.props.display}} className="container">
+      <div style={{display: this.props.display, backgroundColor: colors.background, color: colors.color, boxShadow: '0px 0px 2px 2px ' + colors.shadow}} className="container">
         {info == null ? (
-          <Loading /> 
+          <Loading color={colors.secondary}/> 
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
-          {isHovering && <div onClick={this.close} className='close'><FaTimesCircle/></div>}
+          {isHovering && <div onClick={this.close} style={{color: colors.color}} className='close'><FaTimesCircle/></div>}
             <div className="img_container">
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
@@ -233,7 +242,7 @@ export default class Listitem extends Component {
               {title[1] != undefined && <div className="info_div"><FaMicrophone /><div>{title[1]}</div></div>}
               {title[1] != undefined && <br/>}
               <div className="info_div"><FaUser /><div>{title[0]}</div></div><br/>
-              <div className="radio-group">
+              <div className={"radio-group " + (this.props.options.theme === 1 ? 'linput' : 'dinput')} style={{backgroundColor: colors.background, boxShadow: '0 0 2px 2px ' + colors.shadow}}>
                 <div>
                   <input type="radio" onClick={this.chooseFormat} value={"mp3"} name={`${this.props.index}type`} className="btnRadio" id={`${this.props.index}option`} defaultChecked />
                   <label htmlFor={`${this.props.index}option`}>MP3</label>
@@ -248,23 +257,25 @@ export default class Listitem extends Component {
                   })}
               </div>
             </div>
-            <div className="progressBar">
+            <div className="progressBar" style={(percentA == 0 && isDownloading) ? {animation: 'rotating 1s ease-in-out infinite', boxShadow: '0 0 5px 5px ' + colors.shadow} : {boxShadow: '0 0 5px 5px ' + colors.shadow}}>
               <ProgressBar 
                 strokeWidth="5"
                 sqSize="45"
-                percentage={percentA}/>
+                color={colors.secondary}
+                percentage={(percentA == 0 && isDownloading)? 5 : percentA}/>
             </div>
-            <div className="progressBar">
+            <div className="progressBar" style={(percentV == 0 && isDownloading) ? {animation: 'rotating 1s ease-in-out infinite', boxShadow: '0 0 5px 5px ' + colors.shadow} : {boxShadow: '0 0 5px 5px ' + colors.shadow}}>
               <ProgressBar 
                 strokeWidth="5"
                 sqSize="60"
-                percentage={percentV}/>
+                color={colors.secondary}
+                percentage={(percentV == 0 && isDownloading && percentA == 100)? 5 : percentV}/>
             </div>
             {isDownloading ? 
-              <div className="btnIcon" onClick={this.pause}>
+              <div className="btnIcon" style={{backgroundColor: colors.secondary, color: colors.background}} onClick={this.pause}>
                 <FaPauseCircle size={20}/>
               </div> :
-              <div className="btnIcon download" onClick={this.doDownload}>
+              <div className="btnIcon download" style={{backgroundColor: colors.secondary, color: colors.background}} onClick={this.doDownload}>
                 <FaPlayCircle size={20}/>
               </div>
             }

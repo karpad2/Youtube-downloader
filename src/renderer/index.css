@@ -7,11 +7,11 @@
 @import url('https://fonts.googleapis.com/css?family=Iceland');
 
 body, html {
-  color: #a8a8a8;
-  background-color: #272c31;
   font-family: 'Iceland';
   padding: 0;
   margin: 0;
+  color: #a8a8a8;
+  background-color: #272c31;
   overflow: hidden;
   height: 100%;
 }

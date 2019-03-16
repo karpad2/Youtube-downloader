@@ -40,13 +40,14 @@ export default class Listitemfinished extends Component {
       title = info.title.split('-');
       if (title[1] != undefined) title[1] = title[1].trim();
     }
+    var colors = this.props.style;
     return (
-      <div className="container">
+      <div style={{display: this.props.display, backgroundColor: colors.background, color: colors.color, boxShadow: '0px 0px 2px 2px ' + colors.shadow}} className="container">
         {info == null ? (
-          <Loading /> 
+          <Loading color={colors.secondary}/> 
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
-            {isHovering && <div onClick={this.destroy} className='close'><FaTimesCircle/></div>}
+            {isHovering && <div onClick={this.destroy} style={{color: colors.color}} className='close'><FaTimesCircle/></div>}
             <div className="img_container">
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
@@ -56,22 +57,10 @@ export default class Listitemfinished extends Component {
               {title[1] != undefined && <br/>}
               <div className="info_div"><FaUser /><div>{title[0]}</div></div><br/>
             </div>
-            <div className="progressBar">
-              <ProgressBar 
-                strokeWidth="5"
-                sqSize="45"
-                percentage={100}/>
-            </div>
-            <div className="progressBar play">
-              <ProgressBar 
-                strokeWidth="5"
-                sqSize="45"
-                percentage={100}/>
-            </div>
-              <div className="btnIcon" onClick={() => shell.showItemInFolder(path)}>
+              <div className="btnIcon" style={{backgroundColor: colors.secondary, color: colors.background}} onClick={() => shell.showItemInFolder(path)}>
                 <FaFolder size={15}/>
               </div>
-              <div className="btnIcon play" onClick={() => shell.openItem(path)}>
+              <div className="btnIcon play" style={{backgroundColor: colors.secondary, color: colors.background}} onClick={() => shell.openItem(path)}>
                 <FaPlayCircle size={20}/>
               </div>
           </div>

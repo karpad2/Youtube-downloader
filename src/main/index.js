@@ -9,14 +9,16 @@ if (process.platform === 'win32')
 else
   path += '/youtube-downloader/'
 
-if (!fs.existsSync(path + "/config.json")) {
+if (!fs.existsSync(path + "config.json")) {
   var options = {
     path: app.getPath('music'),
+    bitrate: 192,
     numDown: 3,
-    listNum: 20,
-    filterNum: 200,
+    theme: 0,
+    filterNum: 2000,
+    listNum: 30,
   }
-  fs.writeFileSync(path + "/config.json", JSON.stringify(options), 'utf8');
+  fs.writeFileSync(path + "config.json", JSON.stringify(options), 'utf8');
 }
 
 let mainWindow;
@@ -115,7 +117,7 @@ else {
     mainWindow.webContents.openDevTools();
     mainWindow.webContents.once('dom-ready', () => {
       mainWindow.show();
-      mainWindow.webContents.send('noUpdateReady');
+      mainWindow.webContents.send('updateReady', 50);
       mainWindow.webContents.send('configPath', path)
     })
     ipcMain.on('closeWindow', () => mainWindow.close())

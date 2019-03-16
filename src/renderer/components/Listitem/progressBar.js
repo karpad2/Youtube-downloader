@@ -26,7 +26,8 @@ export default class ProgressBar extends Component {
             transform={`rotate(-90 ${this.props.sqSize / 2} ${this.props.sqSize / 2})`}
             style={{
               strokeDasharray: dashArray,
-              strokeDashoffset: dashOffset
+              strokeDashoffset: dashOffset,
+              stroke: this.props.color
             }} />
       </svg>
     )

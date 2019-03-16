@@ -7,3 +7,9 @@
   transform: translate(-50%, -50%);
   -webkit-app-region: drag;
 }
+
+.update {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}

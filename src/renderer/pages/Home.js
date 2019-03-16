@@ -22,106 +22,22 @@ import {
   DialogActions, 
   Button, 
   MuiThemeProvider, 
-  createMuiTheme,
   Tabs, 
-  Tab
+  Tab,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Input,
+  FormControlLabel,
+  Checkbox
 } from '@material-ui/core';
 import fs from 'fs';
 import Listitemfinished from '../components/Listitem/Listitemfinished';
 const {dialog} = require('electron').remote;
-
-const tabStyle = createMuiTheme({
-  overrides: {
-    MuiTab: {
-      root: {
-        '&:hover': {
-          color: '#eba576',
-          opacity: 1,
-        },
-        '&$selected': {
-          color: '#eba576'
-        },
-        '&:focus': {
-          color: '#eba576',
-        },
-      },
-    },
-    MuiTabs: {
-      root: {
-        borderRadius: '20px',
-      },
-      indicator: {
-        backgroundColor: '#eba576',
-        borderRadius: '20px'
-      }
-    }
-  },
-  typography: {
-    "fontFamily": 'Iceland',
-    "fontSize": 18,
-    "fontWeightLight": 300,
-    "fontWeightRegular": 400,
-    "fontWeightMedium": 500,
-    useNextVariants: true
-  },
-})
-const style = createMuiTheme({
-  overrides: {
-    MuiDialog: {
-      paper: {
-        backgroundColor: '#1c1f23'
-      },
-      root: {
-        color: '#a8a8a8'
-      }
-    },
-    MuiInput: {
-      root: {
-        color: '#a8a8a8',
-        '&$underline': {
-          '&:before': {
-            borderBottomColor: '#a8a8a8'
-          },
-          '&:after': {
-            borderBottomColor: '#eba576'
-          },
-          '&&&&:hover:before': {
-            borderBottom: '1px solid #eba576'
-          }
-        },
-        display: 'block'
-      },
-    },
-    MuiButton: {
-      text: {
-        color: '#a8a8a8'
-      }
-    },
-    MuiInputLabel: {
-      root: {
-        color: '#a8a8a8',
-        "&$focused": {
-          "&$focused": {
-            "color": "#eba576"
-          }
-        }
-      },
-    },
-    MuiTypography: {
-      h6: {
-        color: '#a8a8a8'
-      }
-    }
-  },
-  typography: {
-    "fontFamily": 'Iceland',
-    "fontSize": 18,
-    "fontWeightLight": 300,
-    "fontWeightRegular": 400,
-    "fontWeightMedium": 500,
-    useNextVariants: true
-  },
-});
+import {style as style1} from '../style/darkTheme';
+import {style as style2} from '../style/lightTheme';
+import {dark, light} from '../style/colors'
 
 export default class Home extends Component {
   constructor(props) {
@@ -140,6 +56,8 @@ export default class Home extends Component {
     this.links = [];
     this.isLoading = false;
     this.state = {
+      bitrate: 192,
+      theme: 1,
       numDown: 5,
       listNum: 20,
       filterNum: 1000,
@@ -151,7 +69,12 @@ export default class Home extends Component {
       autoDownload: false,
       path: "/home/kornel/Music/dev",
       options: {
-        path: "/home/kornel/Music/dev"
+        path: "/home/kornel/Music/dev",
+        bitrate: 192,
+        theme: 1,
+        numDown: 5,
+        listNum: 20,
+        filterNum: 1000
       }
     }
   }
@@ -167,7 +90,12 @@ export default class Home extends Component {
         this.setState({
           path: path[0],
           options: {
-            path: path[0]
+            path: path[0],
+            bitrate: this.state.options.bitrate,
+            theme: this.state.options.theme,
+            numDown: this.state.options.numDown,
+            listNum: this.state.options.listNum,
+            filterNum: this.state.options.filterNum
           }
         })
       }
@@ -191,13 +119,20 @@ export default class Home extends Component {
       numDown: this.state.numDown,
       listNum: this.state.listNum,
       filterNum: this.state.filterNum,
-      path: this.state.path
+      path: this.state.path,
+      bitrate: this.state.bitrate,
+      theme: this.state.theme
     };
     this.setState({
       options: { 
-        path: options.path
+        path: options.path,
+        bitrate: options.bitrate,
+        theme: options.theme,
+        numDown: options.numDown,
+        listNum: options.listNum,
+        filterNum: options.filterNum,
       }
-    });    
+    });
     fs.writeFileSync(this.configPath + "config.json", JSON.stringify(options), 'utf8');
     this.handleClose()
   }
@@ -280,16 +215,18 @@ export default class Home extends Component {
       this.configPath = arg;
       var options = JSON.parse(fs.readFileSync(arg + "config.json"), 'utf8');
       this.setState({
-        path: options.path,
-        numDown: options.numDown != undefined ? options.numDown : this.state.numDown,
-        listNum: options.listNum != undefined ? options.listNum : this.state.listNum,
-        filterNum: options.filterNum != undefined ? options.filterNum : this.state.filterNum,
         options: {
-          path: options.path
+          path: options.path,
+          numDown: options.numDown != undefined ? options.numDown : this.state.numDown,
+          listNum: options.listNum != undefined ? options.listNum : this.state.listNum,
+          filterNum: options.filterNum != undefined ? options.filterNum : this.state.filterNum,
+          bitrate: options.bitrate != undefined ? options.bitrate : this.state.bitrate,
+          theme: options.theme != undefined ? options.theme : this.state.theme,
         }
       })
-      this.addLink();
-    })
+      this.setState(this.state.options);
+    });
+
     clipboard.on('text-changed', () => {
       var regExp = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//;
       var text = clipboard.readText()
@@ -344,11 +281,13 @@ export default class Home extends Component {
   }
 
   render() {
-    var { data, finished, options, path } = this.state
+    var { data, finished, options, path, value } = this.state
     var onQueue = this.state.queue.length;
+    var colors = this.state.theme === 1 ? light : dark;
+    var style = this.state.theme === 1 ? style2 : style1;
     return (
       <div style={{height: '100%'}}>
-        <div className="navbar">
+        <div className="navbar" style={{backgroundColor:colors.background, color: colors.color}}>
           <div className="appName">Youtube Downloader</div>
           <div className="buttons">
             <div><FaWindowClose onClick={() => ipcRenderer.send('closeWindow')}/></div>
@@ -356,21 +295,21 @@ export default class Home extends Component {
             <div><FaWindowMinimize onClick={() => ipcRenderer.send('minimizeWindow')}/></div>
           </div>
         </div>
-        <div className="menu">
+        <div className="menu" style={{backgroundColor:colors.background, color: colors.color}}>
           <div className="btnOptions" onClick={() => { this.setState({ open: true }) }}>
             <IoIosOptions size={30}/>
             Options
           </div>
           <div className="btnDownload">
-            <FaArrowDown size={30} color={this.state.autoDownload ? '#eba576' : '#a8a8a8'} onClick={this.startAll}/>
+            <FaArrowDown size={30} color={this.state.autoDownload ? colors.secondary : colors.color} onClick={this.startAll}/>
             Auto
           </div>
           <div className="btnClear">
             <MdClearAll size={30} onClick={this.clearList}/>
             {finished.length + " / " + (data.length + finished.length + onQueue)}
           </div>
-          <div className="btnTabs">
-            <MuiThemeProvider theme={tabStyle}>
+          <div className="btnTabs" style={{backgroundColor:colors.background, color: colors.color, boxShadow: "0px 2px 1px 1px " + colors.shadow}}>
+            <MuiThemeProvider theme={style}>
               <Tabs value={this.state.value} onChange={this.handleChange}>
                 <Tab icon={<FaTasks />} label="In progress" />
                 <Tab icon={<FaFolder />} label="Downloaded" />
@@ -378,15 +317,16 @@ export default class Home extends Component {
             </MuiThemeProvider>
           </div>
         </div>
-        <div ref={this.scrollBar} className="items">
+        <div ref={this.scrollBar} style={{backgroundColor: colors.background2, color:colors.color}} className={(options.theme === 1 ? "lScroll" : "dScroll") + " items"}>
         {
-          this.state.value === 1 &&
+          value === 1 &&
           finished.map((file, i) => {
             return( 
               <Listitemfinished 
                 path={file.path} 
                 info={file.info} 
                 index={i} 
+                style={colors}
                 ref={file.ref} 
                 unmountMe={(index) => this.deleteFile(index)} 
                 key={file.info.title}/>
@@ -397,17 +337,18 @@ export default class Home extends Component {
           data.map((link, i) => {
             return (
               <Listitem 
-                display={this.state.value === 1 ? 'none' : 'block'}
+                display={value === 1 ? 'none' : 'block'}
                 options={options} 
                 link={link.link} 
                 index={i} 
+                style={colors}
                 ref={link.ref}
                 loaded={(index) => {this.loadedInfo(index)}}
                 unmountMe={(index, info, path) => {this.deleteLink(index, info, path)}} 
                 key={link.link}/>)
           })}
-        {(data.length == 0 && this.state.value === 0) && <div className="hint_text">Copy a youtube link</div>}
-        {(finished.length == 0 && this.state.value === 1) && <div className="hint_text">No file downloaded</div>}
+        {(data.length == 0 && value === 0) && <div className="hint_text">Copy a youtube link</div>}
+        {(finished.length == 0 && value === 1) && <div className="hint_text">No file downloaded</div>}
         </div>
         <MuiThemeProvider theme={style}>
           <Dialog 
@@ -422,54 +363,103 @@ export default class Home extends Component {
               <div className="inputContainer">
                 <TextField 
                   autoFocus
-                  fullWidth
                   margin="dense"
                   id="path"
                   label="Download path"
                   InputProps={{
                     style:{
-                      paddingRight: '20px'
+                      paddingRight: '20px',
+                      width: "100%"
                   }}}
                   type="text"
                   value={path}
                   onChange={(event) => this.setState({ path: event.target.value })}
                 />
-                <div className="openFileDialog" onClick={this.openFileDialog}><FaFolder /></div>
-                <TextField
-                  id="standard-number"
-                  label="Parallel download number"
-                  value={this.state.numDown}
-                  onChange={(event)=>this.setState({numDown: event.target.value})}
-                  type="number"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  margin="normal"
-                />
-                <TextField
-                  id="standard-number"
-                  label="Visible item number"
-                  value={this.state.listNum}
-                  onChange={(event)=>this.setState({listNum: event.target.value})}                  type="number"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  margin="normal"
-                />
-                <TextField
-                  id="standard-number"
-                  label="Youtube playlist limit"
-                  value={this.state.filterNum}
-                  onChange={(event)=>this.setState({filterNum: event.target.value})}                  type="number"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  margin="normal"
-                />
+                <div className={"openFileDialog " + (this.state.theme === 1 ? 'lDialog' : 'dDialog')}  onClick={this.openFileDialog}><FaFolder /></div>
+                <div style={{display: "flex", marginTop: "30px"}}>
+                  <div style={{flex: 1, borderRight: `1px solid ${colors.color}`}}>
+                    <TextField
+                      id="first"
+                      width="100px"
+                      label="Parallel download number"
+                      value={this.state.numDown}
+                      onChange={(event)=>this.setState({numDown: event.target.value})}
+                      type="number"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      margin="normal"
+                    />
+                    <TextField
+                      id="second"
+                      width="100px"
+                      label="Visible item number"
+                      value={this.state.listNum}
+                      onChange={(event)=>this.setState({listNum: event.target.value})}                  type="number"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      margin="normal"
+                    />
+                    <TextField
+                      id="third"
+                      width="100px"
+                      label="Youtube playlist limit"
+                      value={this.state.filterNum}
+                      onChange={(event)=>this.setState({filterNum: event.target.value})}                  type="number"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      margin="normal"
+                    />
+                  </div>
+                  <div style={{flex: 1, paddingLeft: "20px", paddingTop: "16px"}}>
+                    <FormControl>
+                      <InputLabel shrink htmlFor="bitrate-label-placeholder">
+                        Audio bitrate
+                      </InputLabel>
+                      <Select
+                        value={this.state.bitrate}
+                        onChange={(event) => this.setState({bitrate: event.target.value})}
+                        input={<Input name="bitrate" id="bitrate-label-placeholder" />}
+                        displayEmpty
+                        name="bitrate"
+                      >
+                        <MenuItem value={192}>192</MenuItem>
+                        <MenuItem value={256}>256</MenuItem>
+                        <MenuItem value={320}>320</MenuItem>
+                      </Select>
+                    </FormControl><br/>
+                    <FormControl>
+                      <InputLabel shrink htmlFor="theme-label-placeholder">
+                        Theme
+                      </InputLabel>
+                      <Select
+                        value={this.state.theme}
+                        onChange={(event) => this.setState({theme: event.target.value})}
+                        input={<Input name="theme" id="theme-label-placeholder" />}
+                        displayEmpty
+                        name="theme"
+                      >
+                        <MenuItem value={0}>Dark</MenuItem>
+                        <MenuItem value={1}>Light</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                </div>
+                <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={true}
+                        value="checkedG"
+                      />
+                    }
+                    label="Remove audio after video download finished"
+                  />
               </div>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => { this.setState({ path: options.path }); this.handleClose()}}>
+              <Button onClick={() => { this.setState(options); this.handleClose()}}>
                 Close
               </Button>
               <Button onClick={this.saveConfig}>

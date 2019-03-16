@@ -1,3 +1,35 @@
+.dScroll::-webkit-scrollbar {
+	background-color: #272c31
+}
+
+.dScroll::-webkit-scrollbar-thumb {
+	background: #1c1f23; 
+}
+
+.dScroll::-webkit-scrollbar-thumb:hover {
+	background: #eba576; 
+}
+
+.dDialog:hover {
+	color: #eba576;
+}
+
+.lDialog:hover {
+	color: #cc0000;
+}
+
+.lScroll::-webkit-scrollbar {
+	background-color: #a8a8a8;
+}
+
+.lScroll::-webkit-scrollbar-thumb {
+	background: #563D7C; 
+}
+
+.lScroll::-webkit-scrollbar-thumb:hover {
+	background: #8B7AA6; 
+}
+
 .hint_text {
   position: absolute;
   top: 50%;
@@ -8,40 +40,31 @@
 
 .items::-webkit-scrollbar {
 	width: 10px;
-	background-color: #272c31
 }
  
 .items::-webkit-scrollbar-thumb {
-	background: #1c1f23; 
 	border-radius: 5px;
 }
 
-.items::-webkit-scrollbar-thumb:hover{
-	background: #eba576; 
-}
-
 .navbar {
-	position: fixed;
+	position: relative;
 	height: 25px;
 	width: 100%;
-	background-color: #1c1f23;
 	-webkit-app-region: drag;
 	z-index: 100;
 }
 
 .items {
-	padding-top: 20px;
+	padding-top: 25px;
 	height: calc(100% - 125px);
   overflow-y: auto;
 }
 
 .menu {
-	display: inline-block;
+	display: block;
 	position: relative;
 	height: 100px;
 	width: 100%;
-	background-color: #1c1f23;
-	margin-top: 25px;
 }
 
 .btnOptions {
@@ -88,9 +111,7 @@
 	transform: translate(-50%, 25%);
 	text-align: center;
 	z-index: 100;
-	background-color: #1c1f23;
 	border-radius: 20px;
-	box-shadow: 0px 0px 2px 2px #1c1f23c0;
 }
 
 .appName {
@@ -132,11 +153,19 @@
 .openFileDialog {
 	position: absolute;
 	right: 0;
-	top: 30px;
+	top: 25px;
 	transform: translate(0, -0%);
 }
 
 .openFileDialog:hover {
-	color: #eba576;
 	cursor: pointer;
+}
+
+@-webkit-keyframes rotating {
+	from {
+		transform: translate(50%, -50%) rotate(0deg);
+	}
+	to {
+		transform: translate(50%, -50%) rotate(360deg);
+	}
 }
