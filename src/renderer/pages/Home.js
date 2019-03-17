@@ -87,8 +87,7 @@ export default class Home extends Component {
   addOne() {
     var text = this.link;
     if (!this.state.data.some(e => e.link === text))
-      this.setState({queue: [...this.state.queue, text]})
-    this.addLink();
+      this.addLink([text]);
     this.link = null;
   }
   addList() {
@@ -99,8 +98,7 @@ export default class Home extends Component {
         ytpl(text, {limit: this.state.filterNum}, (err, list) => {
           if (err) {
             if (!this.state.data.some(e => e.link === text))
-              this.setState({queue: [...this.state.queue, text]})
-            this.addLink();
+              this.addLink([text]);
           }
           else {
             var links = [];
@@ -108,8 +106,7 @@ export default class Home extends Component {
               if (!this.state.queue.includes(link.url_simple) && !this.state.data.some(e => e.link === link.url_simple))
                 links = [...links, link.url_simple]
             })
-            this.setState({queue: [...this.state.queue, ...links]})
-            this.addLink();
+            this.addLink(links);
           }
         })
     })
@@ -172,8 +169,9 @@ export default class Home extends Component {
           this.state.data[i].ref.current.doDownload();
     this.setState({autoDownload: !this.state.autoDownload})
   }
-  addLink() {
-    var links = [...this.state.queue];
+  addLink(link) {
+    var links = [...this.state.queue, ...link];
+    this.setState({queue: links})
     for (var i = 0; i < this.state.numDown; i++) {
       if (links[0] != undefined && this.state.data.length < this.state.listNum) {
         var data = {
@@ -203,6 +201,7 @@ export default class Home extends Component {
     }
   }
   deleteLink(key, info, path) {
+    console.log(`${key} - ${path}`)
     var { data } = this.state;
     if (this.state.autoDownload)
       for (var i = 0; i <= this.state.numDown; i++)
@@ -211,13 +210,13 @@ export default class Home extends Component {
     var arr = [...data];
     if (this.state.queue.length != 0 && data.length < this.state.listNum) {
       var links = [...this.state.queue]
-      var data = {
+      var newData = {
         ref: React.createRef(),
         link: links[0]
       }
       links.splice(0, 1);
       this.setState({queue: [...links]})
-      arr = [...arr, data];
+      arr = [...arr, newData];
     }
     arr.splice(key, 1);
     this.setState({data: [...arr]})
@@ -272,7 +271,7 @@ export default class Home extends Component {
       if (link != null) {
         if (text.includes("list") || text.includes("channel")) {
           this.link = text;
-          if (!text.includes("watch")) {
+          if (!text.includes("watch") && !text.includes("youtu.be")) {
             this.addList();
           }
           else {
@@ -282,8 +281,7 @@ export default class Home extends Component {
         }
         else {
           if (!this.state.data.some(e => e.link === text))
-            this.setState({queue: [...this.state.queue, text]})
-          this.addLink();
+            this.addLink([text]);
         }
         clipboard.clear();
       }

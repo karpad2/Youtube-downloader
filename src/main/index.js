@@ -54,6 +54,7 @@ if (!isDevelopment) {
     mainWindow.webContents.once('dom-ready', () => {
       mainWindow.show();
       mainWindow.webContents.send('updateReady', 0);
+      mainWindow.webContents.send('configPath', path)
     })
   })
 

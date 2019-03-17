@@ -136,7 +136,7 @@ export default class Listitem extends Component {
             if (!fs.existsSync(file + ".mp4")) {
               this.audio = ytdl(this.state.link, options)
               .on('progress', (length, downloaded, totallength) => {
-                if (!this.state.isDownloading)
+                if (!this.state.isDownloading && this.convert != null)
                   this.audio.pause();
                 this.setState({ percentA: Math.round(downloaded / totallength * 100) })
               })
@@ -197,7 +197,7 @@ export default class Listitem extends Component {
         allformats.forEach(format=> {
           if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
         })
-        console.log(info);
+        //console.log(info);
         this.setState({ 
           info: info, 
           time: this.toHHMMSS(parseInt(info.length_seconds)), 
@@ -243,7 +243,6 @@ export default class Listitem extends Component {
         ) : (
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
           {isHovering && <div onClick={this.close} style={{color: colors.color}} className='close'><FaTimesCircle/></div>}
-          {isHovering && <div onClick={()=>this.setState({open: true})} style={{color: colors.color}} className='btnInfo'><FaInfoCircle/></div>}
             <div className="img_container">
               <img src={info.thumbnail_url} alt="img"/>
               <div className="img_time">{time}</div>
