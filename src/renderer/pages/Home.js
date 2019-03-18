@@ -406,7 +406,6 @@ export default class Home extends Component {
             <DialogContent>
               <div className="inputContainer">
                 <TextField 
-                  autoFocus
                   margin="dense"
                   id="path"
                   label="Download path"
