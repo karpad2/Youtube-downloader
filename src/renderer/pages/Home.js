@@ -54,16 +54,22 @@ export default class Home extends Component {
     this.addOne = this.addOne.bind(this);
     this.addList = this.addList.bind(this);
     this.handleChooseClose = this.handleChooseClose.bind(this);
+    this.checkNext = this.checkNext.bind(this);
+    this.data = [];
+    this.finished = [];
+    this.queue = [];
+    this.autoDownload = false;
     this.link = null;
     this.scrollBar = React.createRef();
     this.configPath = null;
     this.links = [];
     this.isLoading = false;
     this.state = {
+      listLoading: false,
       bitrate: 192,
-      theme: 1,
-      numDown: 5,
-      listNum: 20,
+      theme: 0,
+      numDown: 2,
+      listNum: 10,
       filterNum: 1000,
       value: 0,
       data: [],
@@ -72,13 +78,13 @@ export default class Home extends Component {
       open: false,
       choose: false,
       autoDownload: false,
-      path: "/home/kornel/Music/dev",
+      path: "/home/kornel/Music/dev22",
       options: {
-        path: "/home/kornel/Music/dev",
+        path: "/home/kornel/Music/dev22",
         bitrate: 192,
-        theme: 1,
-        numDown: 5,
-        listNum: 20,
+        theme: 0,
+        numDown: 2,
+        listNum: 10,
         filterNum: 1000
       }
     }
@@ -86,7 +92,7 @@ export default class Home extends Component {
 
   addOne() {
     var text = this.link;
-    if (!this.state.data.some(e => e.link === text))
+    if (!this.data.some(e => e.link === text))
       this.addLink([text]);
     this.link = null;
   }
@@ -97,17 +103,18 @@ export default class Home extends Component {
       if (data.includes('list') || text.includes("channel"))
         ytpl(text, {limit: this.state.filterNum}, (err, list) => {
           if (err) {
-            if (!this.state.data.some(e => e.link === text))
+            if (!this.data.some(e => e.link === text))
               this.addLink([text]);
           }
           else {
             var links = [];
             list.items.forEach(link => {
-              if (!this.state.queue.includes(link.url_simple) && !this.state.data.some(e => e.link === link.url_simple))
+              if (!this.queue.includes(link.url_simple) && !this.data.some(e => e.link === link.url_simple))
                 links = [...links, link.url_simple]
             })
             this.addLink(links);
           }
+          this.setState({listLoading: false})
         })
     })
     this.link = null;
@@ -139,13 +146,17 @@ export default class Home extends Component {
   }
   clearList() {
     if (this.state.value === 0) {
-      var data = this.state.data.filter(item => {
+      var data = this.data.filter(item => {
         return item.ref.current.state.isDownloading
       })
+      this.data = [...data];
+      this.queue = [];
       this.setState({data: [...data], queue: []})
     }
-    else if (this.state.value === 1)
+    else if (this.state.value === 1) {
+      this.finished = [];
       this.setState({finished: []})
+    }
   }
   saveConfig(saved) {
     var options = {
@@ -163,77 +174,121 @@ export default class Home extends Component {
     this.handleClose(saved)
   }
   startAll() {
-    if (!this.state.autoDownload)
-      for (var i = 0; i < this.state.numDown; i++)
-        if (this.state.data[i] != null)
-          this.state.data[i].ref.current.doDownload();
-    this.setState({autoDownload: !this.state.autoDownload})
-  }
-  addLink(link) {
-    var links = [...this.state.queue, ...link];
-    this.setState({queue: links})
-    for (var i = 0; i < this.state.numDown; i++) {
-      if (links[0] != undefined && this.state.data.length < this.state.listNum) {
-        var data = {
-          ref: React.createRef(),
-          link: links[0]
-        }
-        links.splice(0, 1);
-        this.setState({
-          data: [...this.state.data, data],
-          queue: [...links]
-        })
+    this.autoDownload = !this.autoDownload;
+    this.setState({autoDownload: !this.state.autoDownload});
+    if (this.autoDownload) {
+      for (var i = 0; i < this.state.numDown; i++) {
+        this.checkNext(i);
       }
     }
   }
-  loadedInfo() {
-    if (this.state.queue[0] != undefined && this.state.data.length < this.state.listNum) {
-      var links = [...this.state.queue]
-      var data = {
-        ref: React.createRef(),
-        link: links[0]
+  checkNext(i) {
+    try {
+      if (this.data[i] != undefined) {}
+        var result = this.data[i].ref.current.isExists();
+        if (result.length > 0) {
+          if (result[0] != null) {
+            this.data.splice(i, 1);
+            if (this.queue[0] != undefined && this.data.length < this.state.listNum) {
+              var newData = {
+                ref: React.createRef(),
+                link: this.queue[0]
+              } 
+              this.queue.splice(0, 1);
+              this.data = [...this.data, newData];
+            }
+            var finished = {
+              ref: React.createRef(),
+              info: result[0],
+              path: result[1]
+            }
+            if (!this.finished.some(e => e.path === finished.path))
+              this.finished = [...this.finished, finished];
+            this.setState({
+              queue: [...this.queue],
+              data: [...this.data],
+              finished: [...this.finished]
+            })
+            if (i < this.data.length)
+              this.checkNext(i);
+          }
+          else this.data[i].ref.current.doDownload();
+        }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  addLink(link) {
+    this.queue = [...this.queue, ...link];
+    for (var i = 0; i < this.state.numDown; i++) {
+      if (this.queue[0] != undefined && this.data.length < this.state.listNum) {
+        var data = {
+          ref: React.createRef(),
+          link: this.queue[0]
+        }
+        this.queue.splice(0, 1);
+        this.data = [...this.data, data];
       }
-      links.splice(0, 1);
+    }
+    this.setState({
+      data: [...this.data],
+      queue: [...this.queue]
+    })
+  }
+  loadedInfo() {    
+    if (this.queue[0] != undefined && this.data.length < this.state.listNum) {
+      var newData = {
+        ref: React.createRef(),
+        link: this.queue[0]
+      }
+      this.queue.splice(0, 1);
+      this.data = [...this.data, newData];
       this.setState({
-        data: [...this.state.data, data],
-        queue: [...links]
+        data: [...this.data],
+        queue: [...this.queue]
       })
+    }
+    if (this.autoDownload) {
+      for (var i = 0; i < this.state.numDown; i++) {
+        this.checkNext(i);
+      }
     }
   }
   deleteLink(key, info, path) {
-    console.log(`${key} - ${path}`)
-    var { data } = this.state;
-    if (this.state.autoDownload)
-      for (var i = 0; i <= this.state.numDown; i++)
-        if (data[i] != undefined)
-          data[i].ref.current.doDownload();
-    var arr = [...data];
-    if (this.state.queue.length != 0 && data.length < this.state.listNum) {
-      var links = [...this.state.queue]
+    this.data.splice(key, 1);
+    if (this.queue[0] != undefined && this.data.length < this.state.listNum) {
       var newData = {
         ref: React.createRef(),
-        link: links[0]
-      }
-      links.splice(0, 1);
-      this.setState({queue: [...links]})
-      arr = [...arr, newData];
+        link: this.queue[0]
+      } 
+      this.queue.splice(0, 1);
     }
-    arr.splice(key, 1);
-    this.setState({data: [...arr]})
+    if (this.autoDownload) {
+      var i = this.state.numDown - 1;
+      if (i < this.data.length)
+        this.checkNext(i);
+    }
+    if (newData != undefined)
+      this.data = [...this.data, newData];
+    
     if (info != null) {
       var finished = {
         ref: React.createRef(),
         info: info,
         path: path
       }
-      this.setState({ finished: [...this.state.finished, finished] })
+      this.finished = [...this.finished, finished];
     }
+    this.setState({
+      queue: [...this.queue],
+      data: [...this.data],
+      finished: [...this.finished]
+    })
   }
   deleteFile(key) {
-    var arr = [...this.state.finished];
-    arr.splice(key, 1);
+    this.finished.splice(key, 1);
     this.setState({
-      finished: [...arr]
+      finished: [...this.finished]
     })
   }
   handleClose(saved) { 
@@ -269,6 +324,7 @@ export default class Home extends Component {
       var text = clipboard.readText()
       var link = text.match(regExp);
       if (link != null) {
+        this.setState({listLoading: true});
         if (text.includes("list") || text.includes("channel")) {
           this.link = text;
           if (!text.includes("watch") && !text.includes("youtu.be")) {
@@ -280,26 +336,27 @@ export default class Home extends Component {
           }
         }
         else {
-          if (!this.state.data.some(e => e.link === text))
+          if (!this.data.some(e => e.link === text))
             this.addLink([text]);
+          this.setState({listLoading: false})
         }
         clipboard.clear();
       }
     }).startWatching();
     this.scrollBar.current.addEventListener('scroll', ()=> {
       var node = this.scrollBar.current;
-      if (node.scrollHeight - node.scrollTop === node.clientHeight && this.state.data.length > this.state.listNum - 1 && this.state.value !== 1) {
+      if (node.scrollHeight - node.scrollTop === node.clientHeight && this.data.length > this.state.listNum - 1 && this.state.value !== 1) {
         for (var i = 0; i < this.state.numDown; i++) {
-          if (this.state.queue[0] != undefined) {
-            var links = [...this.state.queue]
+          if (this.queue[0] != undefined) {
             var data = {
               ref: React.createRef(),
-              link: links[0]
+              link: this.queue[0]
             }
-            links.splice(0, 1);
+            this.queue.splice(0, 1);
+            this.data = [...this.data, data];
             this.setState({
-              data: [...this.state.data, data],
-              queue: [...links]
+              data: [...this.data],
+              queue: [...this.queue]
             })
           }
         }
@@ -308,8 +365,8 @@ export default class Home extends Component {
   }
 
   render() {
-    var { data, finished, options, path, value, theme } = this.state
-    var onQueue = this.state.queue.length;
+    var { data, finished, options, path, value, theme, queue } = this.state
+    var onQueue = queue.length;
     var colors = theme === 0 ? dark : light;
     var style = theme === 0 ? style1 : style2;
     return (
@@ -332,7 +389,7 @@ export default class Home extends Component {
             Auto
           </div>
           <div className="btnClear">
-            <MdClearAll size={30} onClick={this.clearList}/>
+            <MdClearAll className={this.state.listLoading ? "loading" : ""} size={30} onClick={this.clearList}/>
             {finished.length + " / " + (data.length + finished.length + onQueue)}
           </div>
           <div className="btnTabs" style={{backgroundColor:colors.background, color: colors.color, boxShadow: "0px 2px 1px 1px " + colors.shadow}}>
@@ -438,7 +495,8 @@ export default class Home extends Component {
                       width="100px"
                       label="Visible item number"
                       value={this.state.listNum}
-                      onChange={(event)=>this.setState({listNum: event.target.value})}                  type="number"
+                      onChange={(event)=>this.setState({listNum: event.target.value})}                  
+                      type="number"
                       InputLabelProps={{
                         shrink: true,
                       }}
@@ -449,7 +507,8 @@ export default class Home extends Component {
                       width="100px"
                       label="Youtube playlist limit"
                       value={this.state.filterNum}
-                      onChange={(event)=>this.setState({filterNum: event.target.value})}                  type="number"
+                      onChange={(event)=>this.setState({filterNum: event.target.value})}                  
+                      type="number"
                       InputLabelProps={{
                         shrink: true,
                       }}

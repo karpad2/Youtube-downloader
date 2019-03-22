@@ -30,10 +30,12 @@ export default class Listitem extends Component {
     this.pause = this.pause.bind(this);
     this.close = this.close.bind(this);
     this.handleClose = this.handleClose.bind(this);
+    this.isExists = this.isExists.bind(this);
+    this.startDownload = this.startDownload.bind(this);
     this.audio = null;
     this.video = null;
     this.convert = null;
-    this.path;
+    this.path = this.props.options.path;
     this.state = {
       open: false,
       link: this.props.link,
@@ -48,6 +50,24 @@ export default class Listitem extends Component {
     }
   }
 
+  isExists() {
+    if (!this.state.isDownloading && this.state.info != null) {
+      var { info } = this.state;
+      if (process.platform === "win32") 
+        var file = this.path + '\\' + info.title.replace(/[*'/":<>?\\|]/g,'_');
+      else 
+        var file = this.path + '/' + info.title.replace(/[*'/":<>?\\|]/g,'_');
+      if (this.state.selectedFormat === 'mp3') {
+        if (fs.existsSync(file + '.mp3')) return [info, file + '.mp3']; 
+        else return [null, null];
+      }
+      else {
+        if (fs.existsSync(file + '.mp4')) return [info, file + '.mp4']
+        else return [null, null];
+      }
+    }
+    else return [];
+  }
   handleClose() { this.setState({open: false}) }
   chooseFormat(event) { this.setState({ selectedFormat: event.target.value }) }
   toHHMMSS(secs) {
@@ -81,96 +101,101 @@ export default class Listitem extends Component {
           }
         }
         else {
-          if (this.audio != null) this.audio.destroy();
-          if (this.video != null) this.video.destroy();
-          if (this.convert != null) this.convert.kill();
-          var options = {
-            quality: 'highest',
-            filter: 'audio',
-            highWaterMark: 0
-          };
-          var {selectedFormat} = this.state;
-          var path = this.props.options.path;
-          var audioBitrate = this.props.options.bitrate;
-          if (process.platform === "win32") {
-            if (!fs.existsSync(path)) {
-              path = path.split("\\")
-              for (var i = 0; i < path.length; i++) {
-                var dir = path.slice(0, i+1).join('\\');
-                if (!fs.existsSync(dir)) fs.mkdirSync(dir)
-              }
-            }
-            else
-              path = path.split("\\")
-            path = path.join("\\") + "\\";
-          }
-          else {
-            if (!fs.existsSync(path)) {
-              path = path.split("/")
-              for (var i = 1; i < path.length; i++) {
-                var dir = path.slice(0, i+1).join("/");
-                if (!fs.existsSync(dir)) fs.mkdirSync(dir)
-              }
-            }
-            else
-              path = path.split("/")
-            path = path.join("/") + "/";
-          }
-          var file = this.path = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
-          if (selectedFormat == 'mp3') {
-            if (!fs.existsSync(file + ".mp3")) {
-              this.audio = ytdl(this.state.link, options)
-              .on('progress', (length, downloaded, totallength) => {
-                if (!this.state.isDownloading && this.convert != null)
-                  this.audio.pause();
-                this.setState({ percentA: Math.round(downloaded / totallength * 100) })
-              })
-              this.convert = ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
-              .toFormat('mp3')
-              .audioBitrate(audioBitrate)
-              .save(file+'.mp3');
-            }
-            else this.destroy(file + ".mp3")
-          }
-          else {
-            if (!fs.existsSync(file + ".mp4")) {
-              this.audio = ytdl(this.state.link, options)
-              .on('progress', (length, downloaded, totallength) => {
-                if (!this.state.isDownloading && this.convert != null)
-                  this.audio.pause();
-                this.setState({ percentA: Math.round(downloaded / totallength * 100) })
-              })
-              .on('error', (err) => console.log(err))
-              this.convert = ffmpeg(this.audio)
-              .toFormat('mp3')
-              .save(file+'_audio.mp3')
-              .on('end', () => {
-                options = {filter: (format) => format.quality_label === selectedFormat}
-                this.video = ytdl(this.state.link, options)
-                .on('progress', (length, downloaded, totallength) => {
-                  if (!this.state.isDownloading)
-                    this.video.pause();
-                  this.setState({ percentV: Math.round(downloaded / totallength * 100) })
-                })
-                this.convert = ffmpeg()
-                .input(this.video)
-                .videoCodec('copy')
-                .input(file + "_audio.mp3")
-                .audioCodec('copy')
-                .save(file + ".mp4")
-                .on('end', () => {
-                  fs.unlink(file + "_audio.mp3", err => {
-                    if(err) throw err;
-                  });
-                  this.savedPath = file + ".mp4"
-                  this.destroy(file + ".mp4");
-                });
-              })
-            }
-            else this.destroy(file + ".mp4")
-          }
+          this.startDownload();
         }
       }
+    }
+  }
+  startDownload() {
+    if (this.audio != null) this.audio.destroy();
+    if (this.video != null) this.video.destroy();
+    if (this.convert != null) this.convert.kill();
+    var options = {
+      quality: 'highest',
+      filter: 'audio',
+      highWaterMark: 0
+    };
+    var {selectedFormat} = this.state;
+    var path = this.props.options.path;
+    var audioBitrate = this.props.options.bitrate;
+    if (process.platform === "win32") {
+      if (!fs.existsSync(path)) {
+        path = path.split("\\")
+        for (var i = 0; i < path.length; i++) {
+          var dir = path.slice(0, i+1).join('\\');
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+        }
+      }
+      else
+        path = path.split("\\")
+      path = path.join("\\") + "\\";
+    }
+    else {
+      if (!fs.existsSync(path)) {
+        path = path.split("/")
+        for (var i = 1; i < path.length; i++) {
+          var dir = path.slice(0, i+1).join("/");
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+        }
+      }
+      else
+        path = path.split("/")
+      path = path.join("/") + "/";
+    }
+    var file = this.path = path + this.state.info.title.replace(/[*'/":<>?\\|]/g,'_');
+    if (selectedFormat == 'mp3') {
+      if (!fs.existsSync(file + ".mp3")) {
+        this.audio = ytdl(this.state.link, options)
+        .on('progress', (length, downloaded, totallength) => {
+          if (!this.state.isDownloading && this.convert != null)
+            this.audio.pause();
+          this.setState({ percentA: Math.round(downloaded / totallength * 100) })
+        })
+        this.convert = ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
+        .toFormat('mp3')
+        .audioBitrate(audioBitrate.toString())
+        .save(file+'.mp3')
+        .on('error', () => this.startDownload());
+      }
+      else this.destroy(file + ".mp3")
+    }
+    else {
+      if (!fs.existsSync(file + ".mp4")) {
+        this.audio = ytdl(this.state.link, options)
+        .on('progress', (length, downloaded, totallength) => {
+          if (!this.state.isDownloading && this.convert != null)
+            this.audio.pause();
+          this.setState({ percentA: Math.round(downloaded / totallength * 100) })
+        })
+        .on('error', () => this.startDownload());
+        this.convert = ffmpeg(this.audio)
+        .toFormat('mp3')
+        .save(file+'_audio.mp3')
+        .on('end', () => {
+          options = {filter: (format) => format.quality_label === selectedFormat}
+          this.video = ytdl(this.state.link, options)
+          .on('progress', (length, downloaded, totallength) => {
+            if (!this.state.isDownloading)
+              this.video.pause();
+            this.setState({ percentV: Math.round(downloaded / totallength * 100) })
+          })
+          .on('error', () => this.startDownload());
+          this.convert = ffmpeg()
+          .input(this.video)
+          .videoCodec('copy')
+          .input(file + "_audio.mp3")
+          .audioCodec('copy')
+          .save(file + ".mp4")
+          .on('end', () => {
+            fs.unlink(file + "_audio.mp3", err => {
+              if(err) throw err;
+            });
+            this.savedPath = file + ".mp4"
+            this.destroy(file + ".mp4");
+          });
+        })
+      }
+      else this.destroy(file + ".mp4")
     }
   }
   pause() {
@@ -197,7 +222,6 @@ export default class Listitem extends Component {
         allformats.forEach(format=> {
           if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
         })
-        //console.log(info);
         this.setState({ 
           info: info, 
           time: this.toHHMMSS(parseInt(info.length_seconds)), 

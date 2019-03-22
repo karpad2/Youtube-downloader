@@ -161,11 +161,24 @@
 	cursor: pointer;
 }
 
+.loading {
+	animation: rotating2 1.5s ease-in-out infinite
+}
+
 @-webkit-keyframes rotating {
 	from {
 		transform: translate(50%, -50%) rotate(0deg);
 	}
 	to {
 		transform: translate(50%, -50%) rotate(360deg);
+	}
+}
+
+@-webkit-keyframes rotating2 {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
 	}
 }

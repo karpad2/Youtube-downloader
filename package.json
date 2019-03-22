@@ -1,6 +1,6 @@
 {
   "name": "youtube-downloader",
-  "version": "1.9.93",
+  "version": "1.9.95",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -28,8 +28,8 @@
     "@babel/plugin-proposal-class-properties": "^7.3.0",
     "@babel/preset-env": "^7.3.1",
     "@babel/preset-react": "^7.0.0",
-    "electron": "^4.0.4",
-    "electron-builder": "^20.38.5",
+    "electron": "^4.1.0",
+    "electron-builder": "^20.39.0",
     "electron-webpack": "^2.6.2",
     "webpack": "^4.29.3"
   },
@@ -39,11 +39,11 @@
     "electron-updater": "^4.0.6",
     "ffmpeg-static-electron": "^2.0.1",
     "fluent-ffmpeg": "^2.1.2",
-    "react": "^16.8.1",
-    "react-dom": "^16.8.1",
-    "react-icons": "^3.4.0",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4",
+    "react-icons": "^3.5.0",
     "react-progressbar.js": "^0.2.0",
-    "source-map-support": "^0.5.10",
+    "source-map-support": "^0.5.11",
     "ytdl-core": "^0.29.1",
     "ytpl": "^0.1.14"
   }
