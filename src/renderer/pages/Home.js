@@ -78,9 +78,9 @@ export default class Home extends Component {
       open: false,
       choose: false,
       autoDownload: false,
-      path: "/home/kornel/Music/dev22",
+      path: "/home/kornel/Music/proba",
       options: {
-        path: "/home/kornel/Music/dev22",
+        path: "/home/kornel/Music/proba",
         bitrate: 192,
         theme: 0,
         numDown: 2,
@@ -95,6 +95,7 @@ export default class Home extends Component {
     if (!this.data.some(e => e.link === text))
       this.addLink([text]);
     this.link = null;
+    this.setState({listLoading: false})
   }
   addList() {
     var text = this.link;
@@ -255,7 +256,10 @@ export default class Home extends Component {
     }
   }
   deleteLink(key, info, path) {
+    console.log(key + " - " + path);
+    
     this.data.splice(key, 1);
+    this.setState({data: [...this.data]});
     if (this.queue[0] != undefined && this.data.length < this.state.listNum) {
       var newData = {
         ref: React.createRef(),
@@ -297,7 +301,7 @@ export default class Home extends Component {
       this.setState(this.state.options); 
   };
   handleChooseClose() {
-    this.setState({choose: false});
+    this.setState({choose: false, listLoading: false});
     this.link = null;
   }
 

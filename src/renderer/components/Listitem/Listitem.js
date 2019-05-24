@@ -81,7 +81,25 @@ export default class Listitem extends Component {
         .join(":")
   }
   loaded() { this.props.loaded(this.props.index) }
-  close() { this.props.unmountMe(this.props.index) }
+  close() { 
+    this.setState({isDownloading: false}, () => {
+      if (this.convert != null) {
+        this.convert.kill();
+        this.convert = null;
+      }
+      if (this.audio != null) {
+        this.audio.pause();
+        this.audio.destroy(err => console.log(err));
+        this.audio = null;
+      }
+      if (this.video != null) {
+        this.video.pause();
+        this.video.destroy(err => console.log(err));
+        this.video = null;
+      }
+      this.props.unmountMe(this.props.index) 
+    })
+  }
   destroy(path) { this.props.unmountMe(this.props.index, this.state.info, path) }
   mouseHover() { if (!this.state.isHovering) this.setState({ isHovering: true }) }
   mouseLeave() { this.setState({ isHovering: false }) }
@@ -90,7 +108,7 @@ export default class Listitem extends Component {
       if (!this.state.isDownloading) {
         this.setState({isDownloading: true});
         if (this.state.percentA > 0 || this.state.percentV > 0) {
-          if (selectedFormat == 'mp3') {
+          if (this.state.selectedFormat == 'mp3') {
             this.audio.resume();
           }
           else {
@@ -151,11 +169,18 @@ export default class Listitem extends Component {
             this.audio.pause();
           this.setState({ percentA: Math.round(downloaded / totallength * 100) })
         })
-        this.convert = ffmpeg(this.audio.on('end', () => this.destroy(file + ".mp3")))
+        this.convert = ffmpeg(this.audio)
         .toFormat('mp3')
         .audioBitrate(audioBitrate.toString())
         .save(file+'.mp3')
-        .on('error', () => this.startDownload());
+        .on('error', () => {
+          if (this.state.isDownloading)
+            this.startDownload()
+        })
+        .on('end', () => {
+          this.savedPath = file + ".mp3"
+          this.destroy(file + ".mp3");
+        });
       }
       else this.destroy(file + ".mp3")
     }
@@ -232,9 +257,7 @@ export default class Listitem extends Component {
   }
 
   componentWillUnmount() {
-    if (this.audio != null) this.audio.destroy();
-    if (this.video != null) this.video.destroy();
-    if (this.convert != null) this.convert.kill();
+    
     if (this.state.percentA > 0 || this.state.percentV > 0) {
       if (this.state.percentA != 100) {
         if (this.state.selectedFormat != 'mp3')
