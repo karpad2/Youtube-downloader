@@ -4,10 +4,10 @@
     -webkit-user-drag: none;
 }
 
-@import url('https://fonts.googleapis.com/css?family=Iceland');
+@import url('https://fonts.googleapis.com/css?family=Nunito');
 
 body, html {
-  font-family: 'Iceland';
+  font-family: 'Nunito';
   padding: 0;
   margin: 0;
   color: #a8a8a8;

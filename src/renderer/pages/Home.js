@@ -276,18 +276,21 @@ export default class Home extends Component {
       this.data = [...this.data, newData];
     
     if (info != null) {
-      var finished = {
-        ref: React.createRef(),
-        info: info,
-        path: path
+      if (!this.finished.some(file => file.path === path)) {
+        var finished = {
+          ref: React.createRef(),
+          info: info,
+          path: path
+        }
+        this.finished = [...this.finished, finished];
       }
-      this.finished = [...this.finished, finished];
     }
     this.setState({
       queue: [...this.queue],
       data: [...this.data],
       finished: [...this.finished]
     })
+    if (this.data.length === 0 && this.state.autoDownload === true) this.setState({autoDownload: false})
   }
   deleteFile(key) {
     this.finished.splice(key, 1);
@@ -553,15 +556,6 @@ export default class Home extends Component {
                     </FormControl>
                   </div>
                 </div>
-                <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={false}
-                        value="checkedG"
-                      />
-                    }
-                    label="Keep audio after video download finished (Isn't work right now)"
-                  />
               </div>
             </DialogContent>
             <DialogActions>

@@ -25,7 +25,7 @@ const style = createMuiTheme({
             borderBottom: '1px solid ' + color.secondary
           }
         },
-        width: "75px",
+        width: "90px",
       },
     },
     MuiFormControl: {
@@ -80,6 +80,9 @@ const style = createMuiTheme({
           color: color.secondary,
         },
       },
+      labelContainer: {
+        fontSize: 14
+      }
     },
     MuiTabs: {
       root: {
@@ -92,7 +95,7 @@ const style = createMuiTheme({
     }
   },
   typography: {
-    "fontFamily": 'Iceland',
+    "fontFamily": 'Nunito',
     "fontSize": 18,
     "fontWeightLight": 300,
     "fontWeightRegular": 400,
