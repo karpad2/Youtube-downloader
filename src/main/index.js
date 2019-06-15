@@ -64,8 +64,11 @@ if (!isDevelopment) {
       width: 875,
       frame: false,
       show: false,
-      minHeight: 500,
-      minWidth: 875
+      minHeight: 600,
+      minWidth: 875,
+      webPreferences: {
+        nodeIntegrationInWorker: true
+      }
     });
     mainWindow.loadURL(url);    
     mainWindow.on('closed', () => {
@@ -109,7 +112,10 @@ else {
     mainWindow = new BrowserWindow({
       height: 800,
       width: 1200,
+      frame: false,
       show: false,
+      minHeight: 600,
+      minWidth: 875,
       webPreferences: {
         nodeIntegrationInWorker: true
       }

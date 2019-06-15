@@ -1,3 +1,4 @@
 .circle-progress {
   fill: none;
+  transition: ease-in-out .5s;
 }

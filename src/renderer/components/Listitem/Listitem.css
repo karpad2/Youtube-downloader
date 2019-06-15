@@ -48,8 +48,10 @@
 
 .item_container img{
   height: 100%;
-  width: 140px;
+  width: 175px;
   border-radius: 15px 0 0 15px;
+  object-fit: fill;
+  background-color: black;
 }
 
 .close {

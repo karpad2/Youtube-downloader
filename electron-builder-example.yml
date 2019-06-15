@@ -1,0 +1,24 @@
+appId: youtube.downloader.app
+publish:
+  provider: github
+  token: <GitHub token goes here>
+
+productName: Youtube downloader
+artifactName: "${productName}-${arch}.${ext}"
+
+linux:
+  target:
+    - "AppImage"
+  artifactName: "Youtube-downloader-${arch}.${ext}"
+
+
+directories:
+  buildResources: "dist"
+  output: "release"
+
+files:
+  - "!node_modules/ffmpeg-static-electron/**/*"
+
+extraResources:
+  - "node_modules/ffmpeg-static-electron/bin/${os}/${arch}/**/*"
+  - "node_modules/ffmpeg-static-electron/*"

@@ -34,7 +34,7 @@ export default class App extends Component {
   }
 
   render() {
-    var {update, percent, loading, options} = this.state;
+    var {update, percent, loading} = this.state;
     return (
       <div style={{height: '100%'}}>
         {(!loading && update) ? 

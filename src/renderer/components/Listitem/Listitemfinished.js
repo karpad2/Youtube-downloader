@@ -39,6 +39,7 @@ export default class Listitemfinished extends Component {
     if (info != null) {
       title = info.title.split('-');
       if (title[1] != undefined) title[1] = title[1].trim();
+      var thumbs = info.player_response.videoDetails.thumbnail.thumbnails;
     }
     var colors = this.props.style;
     return (
@@ -49,7 +50,7 @@ export default class Listitemfinished extends Component {
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
             {isHovering && <div onClick={this.destroy} style={{color: colors.color}} className='close'><FaTimesCircle/></div>}
             <div className="img_container">
-              <img src={info.thumbnail_url} alt="img"/>
+              <img src={thumbs[thumbs.length-1].url} alt="img"/>
               <div className="img_time">{time}</div>
             </div>
             <div className="info">

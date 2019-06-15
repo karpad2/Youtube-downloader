@@ -29,8 +29,6 @@ import {
   FormControl,
   InputLabel,
   Input,
-  FormControlLabel,
-  Checkbox
 } from '@material-ui/core';
 import fs from 'fs';
 import Listitemfinished from '../components/Listitem/Listitemfinished';
@@ -78,9 +76,9 @@ export default class Home extends Component {
       open: false,
       choose: false,
       autoDownload: false,
-      path: "/home/kornel/Music/proba",
+      path: "D:\\Music\\Probaasdasdasd",
       options: {
-        path: "/home/kornel/Music/proba",
+        path: "D:\\Music\\Probaasdasdasd",
         bitrate: 192,
         theme: 0,
         numDown: 2,
@@ -256,8 +254,6 @@ export default class Home extends Component {
     }
   }
   deleteLink(key, info, path) {
-    console.log(key + " - " + path);
-    
     this.data.splice(key, 1);
     this.setState({data: [...this.data]});
     if (this.queue[0] != undefined && this.data.length < this.state.listNum) {
@@ -500,7 +496,7 @@ export default class Home extends Component {
                     <TextField
                       id="second"
                       width="100px"
-                      label="Visible item number"
+                      label="Visible media number"
                       value={this.state.listNum}
                       onChange={(event)=>this.setState({listNum: event.target.value})}                  
                       type="number"

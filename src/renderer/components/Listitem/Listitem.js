@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import ytdl from 'ytdl-core'
+var ytdl =  require('ytdl-core');
 import fs from 'fs'
 import './Listitem.css'
 import Loading from './Loading'
@@ -7,9 +7,6 @@ import ProgressBar from './progressBar'
 import {FaMicrophone, FaUser, FaTimesCircle, FaPauseCircle, FaPlayCircle, FaInfoCircle} from 'react-icons/fa'
 import ffmpegPath from 'ffmpeg-static-electron'
 import ffmpeg from 'fluent-ffmpeg'
-import { Dialog, MuiThemeProvider, DialogTitle, DialogContent, DialogActions, Button, DialogContentText } from '@material-ui/core';
-import {style as style1} from '../../style/darkTheme'
-import {style as style2} from '../../style/lightTheme'
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 if (isDevelopment)
@@ -37,7 +34,6 @@ export default class Listitem extends Component {
     this.convert = null;
     this.path = this.props.options.path;
     this.state = {
-      open: false,
       link: this.props.link,
       info: null,
       isHovering: false,
@@ -164,23 +160,24 @@ export default class Listitem extends Component {
     if (selectedFormat == 'mp3') {
       if (!fs.existsSync(file + ".mp3")) {
         this.audio = ytdl(this.state.link, options)
-        .on('progress', (length, downloaded, totallength) => {
-          if (!this.state.isDownloading && this.convert != null)
-            this.audio.pause();
-          this.setState({ percentA: Math.round(downloaded / totallength * 100) })
-        })
+          .on('progress', (length, downloaded, totallength) => {
+            if (!this.state.isDownloading && this.convert != null)
+              this.audio.pause();
+            this.setState({ percentA: Math.round(downloaded / totallength * 100) })
+          })
+          .on('error', (err) => console.log(err))
         this.convert = ffmpeg(this.audio)
-        .toFormat('mp3')
-        .audioBitrate(audioBitrate.toString())
-        .save(file+'.mp3')
-        .on('error', () => {
-          if (this.state.isDownloading)
-            this.startDownload()
-        })
-        .on('end', () => {
-          this.savedPath = file + ".mp3"
-          this.destroy(file + ".mp3");
-        });
+          .toFormat('mp3')
+          .audioBitrate(audioBitrate.toString())
+          .save(file+'.mp3')
+          .on('error', () => {
+            if (this.state.isDownloading)
+              this.startDownload()
+          })
+          .on('end', () => {
+            this.savedPath = file + ".mp3"
+            this.destroy(file + ".mp3");
+          });
       }
       else this.destroy(file + ".mp3")
     }
@@ -247,6 +244,7 @@ export default class Listitem extends Component {
         allformats.forEach(format=> {
           if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
         })
+        
         this.setState({ 
           info: info, 
           time: this.toHHMMSS(parseInt(info.length_seconds)), 
@@ -257,7 +255,6 @@ export default class Listitem extends Component {
   }
 
   componentWillUnmount() {
-    
     if (this.state.percentA > 0 || this.state.percentV > 0) {
       if (this.state.percentA != 100) {
         if (this.state.selectedFormat != 'mp3')
@@ -280,9 +277,9 @@ export default class Listitem extends Component {
     if (info != null) {
       title = info.title.split('-');
       if (title[1] != undefined) title[1] = title[1].trim();
+      var thumbs = info.player_response.videoDetails.thumbnail.thumbnails;
     }
     var colors = this.props.style;
-    var style = this.props.theme === 1 ? style2 : style1;
     return (
       <div style={{display: this.props.display, backgroundColor: colors.background, color: colors.color, boxShadow: '0px 0px 2px 2px ' + colors.shadow}} className="container">
         {info == null ? (
@@ -291,7 +288,7 @@ export default class Listitem extends Component {
           <div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
           {isHovering && <div onClick={this.close} style={{color: colors.color}} className='close'><FaTimesCircle/></div>}
             <div className="img_container">
-              <img src={info.thumbnail_url} alt="img"/>
+              <img src={thumbs[thumbs.length-1].url} alt="img"/>
               <div className="img_time">{time}</div>
             </div>
             <div className="info">
@@ -337,29 +334,6 @@ export default class Listitem extends Component {
             }
           </div>
         )}
-        <MuiThemeProvider theme={style}>
-          <Dialog 
-            open={this.state.open}
-            onClose={this.handleClose}
-            maxWidth="xl"
-            aria-labelledby="form-dialog-title"
-          >
-            <DialogTitle id="form-dialog-title">Track informations</DialogTitle>
-            <DialogContent>
-              {info == null ? "Nincs adat" : (
-                <DialogContentText>
-                  {`Title: ${info.title}`}<br/>
-                  {`Author: ${info.author.name}`}<br/>
-                </DialogContentText>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={this.handleClose}>
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </MuiThemeProvider>
       </div>
     )
   }
