@@ -1,6 +1,6 @@
 {
   "name": "youtube-downloader",
-  "version": "1.9.98",
+  "version": "1.9.99",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -44,7 +44,7 @@
     "react-icons": "^3.5.0",
     "react-progressbar.js": "^0.2.0",
     "source-map-support": "^0.5.11",
-    "ytdl-core": "^0.29.2",
+    "ytdl-core": "^0.29.5",
     "ytpl": "^0.1.14"
   }
 }

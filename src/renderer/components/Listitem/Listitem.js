@@ -238,6 +238,7 @@ export default class Listitem extends Component {
     ytdl.getInfo(link, (err, info) => {
       if (err) this.close();
       else {
+        console.log(info);
         this.loaded();
         var allformats = ytdl.filterFormats(info.formats, "videoonly");
         var formats = [];
@@ -247,7 +248,7 @@ export default class Listitem extends Component {
         
         this.setState({ 
           info: info, 
-          time: this.toHHMMSS(parseInt(info.length_seconds)), 
+          time: this.toHHMMSS(parseInt(info.player_response.videoDetails.lengthSeconds)), 
           videoformats: formats
         })
       }
@@ -275,7 +276,8 @@ export default class Listitem extends Component {
     var {info, isHovering, isDownloading, percentA, percentV, time, videoformats} = this.state;
     var title, time;
     if (info != null) {
-      title = info.title.split('-');
+      console.log(info);
+      title = info.player_response.videoDetails.title.split('-');
       if (title[1] != undefined) title[1] = title[1].trim();
       var thumbs = info.player_response.videoDetails.thumbnail.thumbnails;
     }

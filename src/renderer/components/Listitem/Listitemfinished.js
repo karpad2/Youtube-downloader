@@ -14,7 +14,7 @@ export default class Listitemfinished extends Component {
     this.state = {
       isHovering: false,
       info: this.props.info,
-      time: this.toHHMMSS(parseInt(this.props.info.length_seconds)),
+      time: this.toHHMMSS(parseInt(this.props.info.player_response.videoDetails.lengthSeconds)),
       path: this.props.path
     }
   }
@@ -37,7 +37,7 @@ export default class Listitemfinished extends Component {
     var { info, isHovering, time, path } = this.state;
     var title;
     if (info != null) {
-      title = info.title.split('-');
+      title = info.player_response.videoDetails.title.split('-');
       if (title[1] != undefined) title[1] = title[1].trim();
       var thumbs = info.player_response.videoDetails.thumbnail.thumbnails;
     }

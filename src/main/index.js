@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell, Notification } from 'electron';
 import { autoUpdater } from 'electron-updater'
 const isDevelopment = process.env.NODE_ENV !== 'production';
 import fs from 'fs'
@@ -77,7 +77,7 @@ if (!isDevelopment) {
     mainWindow.webContents.once('dom-ready', () => {
       mainWindow.show();
       mainWindow.webContents.send('noUpdateReady');
-      mainWindow.webContents.send('configPath', path)
+      mainWindow.webContents.send('configPath', path);
     });
     ipcMain.on('closeWindow', () => mainWindow.close())
     ipcMain.on('resizeWindow', () => {
@@ -132,10 +132,11 @@ else {
     })
     ipcMain.on('closeWindow', () => mainWindow.close())
     ipcMain.on('resizeWindow', () => {
-      if (mainWindow.isMaximized())
-        mainWindow.unmaximize()
-      else
-        mainWindow.maximize();
+      let notification = new Notification('Proba', {
+        body: 'Click for download'
+      }).on('click', () => {
+        console.log('CLICKED');
+      }).show();
     })
     ipcMain.on('minimizeWindow', () => mainWindow.minimize())
     ipcMain.on('window', () => {
