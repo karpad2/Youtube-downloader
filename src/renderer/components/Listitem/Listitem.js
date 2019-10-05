@@ -129,12 +129,6 @@ export default class Listitem extends Component {
 		if (this.video != null) this.video.destroy();
 		if (this.convert != null) this.convert.kill();
 
-		var albumCover = './images/' + this.state.info.title.replace(/[*'/":<>?\\|]/g, '_') + '.jpeg';
-		if (!fs.existsSync(albumCover)) {
-			var thumb = this.state.info.player_response.videoDetails.thumbnail.thumbnails;
-			request.get(thumb[thumb.length - 1].url).pipe(fs.createWriteStream(albumCover));
-		}
-
 		var options = {
 			quality: 'highest',
 			filter: 'audio',
@@ -163,6 +157,11 @@ export default class Listitem extends Component {
 			path = path.join('/') + '/';
 		}
 		var file = (this.path = path + this.state.info.title.replace(/[*'/":<>?\\|]/g, '_'));
+		var albumCover = file + '.jpeg';
+		if (!fs.existsSync(albumCover)) {
+			var thumb = this.state.info.player_response.videoDetails.thumbnail.thumbnails;
+			request.get(thumb[thumb.length - 1].url).pipe(fs.createWriteStream(albumCover));
+		}
 		if (selectedFormat == 'mp3') {
 			if (!fs.existsSync(file + '.mp3')) {
 				this.audio = ytdl(this.state.link, options)
