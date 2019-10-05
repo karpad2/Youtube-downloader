@@ -1,50 +1,52 @@
 {
-  "name": "youtube-downloader",
-  "version": "1.9.99",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "electron-webpack dev",
-    "compile": "electron-webpack",
-    "dist": "npm run compile && electron-builder",
-    "dist:dir": "npm run dist -- --dir -c.compression=store -c.mac.identity=null",
-    "publish": "npm run compile && electron-builder -wl -p always",
-    "dist:all": "npm run compile && electron-builder -wl"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vkorni97/Youtube-downloader.git"
-  },
-  "author": {
-    "name": "Vaci Kornel",
-    "email": "vacikorni@freemail.hu"
-  },
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/vkorni97/Youtube-downloader/issues"
-  },
-  "homepage": "https://github.com/vkorni97/Youtube-downloader#readme",
-  "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.3.0",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/preset-react": "^7.0.0",
-    "electron": "^4.1.0",
-    "electron-builder": "^20.39.0",
-    "electron-webpack": "^2.6.2",
-    "webpack": "^4.29.3"
-  },
-  "dependencies": {
-    "@material-ui/core": "^3.9.2",
-    "electron-clipboard-extended": "^1.1.1",
-    "electron-updater": "^4.0.6",
-    "ffmpeg-static-electron": "^2.0.1",
-    "fluent-ffmpeg": "^2.1.2",
-    "react": "^16.8.4",
-    "react-dom": "^16.8.4",
-    "react-icons": "^3.5.0",
-    "react-progressbar.js": "^0.2.0",
-    "source-map-support": "^0.5.11",
-    "ytdl-core": "^0.29.5",
-    "ytpl": "^0.1.14"
-  }
+	"name": "youtube-downloader",
+	"version": "2.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "electron-webpack dev",
+		"compile": "electron-webpack",
+		"dist": "npm run compile && electron-builder",
+		"dist:dir": "npm run dist -- --dir -c.compression=store -c.mac.identity=null",
+		"publish": "npm run compile && electron-builder -wl -p always",
+		"dist:all": "npm run compile && electron-builder -wl"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/vkorni97/Youtube-downloader.git"
+	},
+	"author": {
+		"name": "Vaci Kornel",
+		"email": "vacikorni@freemail.hu"
+	},
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/vkorni97/Youtube-downloader/issues"
+	},
+	"homepage": "https://github.com/vkorni97/Youtube-downloader#readme",
+	"devDependencies": {
+		"@babel/plugin-proposal-class-properties": "^7.3.0",
+		"@babel/preset-env": "^7.3.1",
+		"@babel/preset-react": "^7.0.0",
+		"electron": "^4.2.8",
+		"electron-builder": "^20.39.0",
+		"electron-webpack": "^2.6.2",
+		"webpack": "^4.29.3"
+	},
+	"dependencies": {
+		"@material-ui/core": "^3.9.2",
+		"browser-id3-writer": "^4.2.0",
+		"electron-clipboard-extended": "^1.1.1",
+		"electron-updater": "^4.0.6",
+		"ffmpeg-static-electron": "^2.0.1",
+		"fluent-ffmpeg": "^2.1.2",
+		"node-id3": "^0.1.11",
+		"react": "^16.8.4",
+		"react-dom": "^16.8.4",
+		"react-icons": "^3.5.0",
+		"react-progressbar.js": "^0.2.0",
+		"source-map-support": "^0.5.11",
+		"ytdl-core": "^0.29.5",
+		"ytpl": "^0.1.14"
+	}
 }
