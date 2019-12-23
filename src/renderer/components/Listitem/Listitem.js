@@ -202,7 +202,7 @@ export default class Listitem extends Component {
 					})
 					.on('error', () => this.startDownload());
 				this.convert = ffmpeg(this.audio).toFormat('mp3').save(file + '_audio.mp3').on('end', () => {
-					options = { filter: (format) => format.quality_label === selectedFormat };
+					options = { filter: (format) => (format.quality_label || format.resolution) === selectedFormat };
 					this.video = ytdl(this.state.link, options)
 						.on('progress', (length, downloaded, totallength) => {
 							if (!this.state.isDownloading) this.video.pause();
@@ -248,7 +248,7 @@ export default class Listitem extends Component {
 					if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
 				});
 				//<------------------------------------------------------------------------------------------------------------>
-
+				//console.log(formats);
 				//<------------------------------------------------------------------------------------------------------------>
 				this.setState({
 					info: info,
@@ -282,6 +282,7 @@ export default class Listitem extends Component {
 			var thumbs = info.player_response.videoDetails.thumbnail.thumbnails;
 		}
 		var colors = this.props.style;
+		//console.log(videoformats);
 		return (
 			<div
 				style={{
@@ -343,13 +344,13 @@ export default class Listitem extends Component {
 											<input
 												type="radio"
 												onClick={this.chooseFormat}
-												value={format.quality_label}
+												value={format.quality_label || format.resolution}
 												name={`${this.props.index}type`}
 												className="btnRadio"
 												id={`${this.props.index}option${i}`}
 											/>
 											<label htmlFor={`${this.props.index}option${i}`}>
-												{format.quality_label}
+												{format.quality_label || format.resolution}
 											</label>
 										</div>
 									);
