@@ -4,7 +4,14 @@ import fs from 'fs';
 import './Listitem.css';
 import Loading from './Loading';
 import ProgressBar from './progressBar';
-import { FaMicrophone, FaUser, FaTimesCircle, FaPauseCircle, FaPlayCircle, FaInfoCircle } from 'react-icons/fa';
+import {
+	FaMicrophone,
+	FaUser,
+	FaTimesCircle,
+	FaPauseCircle,
+	FaPlayCircle,
+	FaInfoCircle
+} from 'react-icons/fa';
 import ffmpegPath from 'ffmpeg-static-electron';
 import ffmpeg from 'fluent-ffmpeg';
 var request = require('request');
@@ -12,7 +19,10 @@ const ID3Writer = require('browser-id3-writer');
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 if (isDevelopment) ffmpeg.setFfmpegPath(ffmpegPath.path);
-else ffmpeg.setFfmpegPath(ffmpegPath.path.replace('app.asar', 'app.asar.unpacked'));
+else
+	ffmpeg.setFfmpegPath(
+		ffmpegPath.path.replace('app.asar', 'app.asar.unpacked')
+	);
 
 export default class Listitem extends Component {
 	constructor(props) {
@@ -49,8 +59,10 @@ export default class Listitem extends Component {
 	isExists() {
 		if (!this.state.isDownloading && this.state.info != null) {
 			var { info } = this.state;
-			if (process.platform === 'win32') var file = this.path + '\\' + info.title.replace(/[*'/":<>?\\|]/g, '_');
-			else var file = this.path + '/' + info.title.replace(/[*'/":<>?\\|]/g, '_');
+			if (process.platform === 'win32')
+				var file = this.path + '\\' + info.title.replace(/[*'/":<>?\\|]/g, '_');
+			else
+				var file = this.path + '/' + info.title.replace(/[*'/":<>?\\|]/g, '_');
 			if (this.state.selectedFormat === 'mp3') {
 				if (fs.existsSync(file + '.mp3')) return [ info, file + '.mp3' ];
 				else return [ null, null ];
@@ -156,18 +168,25 @@ export default class Listitem extends Component {
 			} else path = path.split('/');
 			path = path.join('/') + '/';
 		}
-		var file = (this.path = path + this.state.info.title.replace(/[*'/":<>?\\|]/g, '_'));
+		var file = (this.path =
+			path + this.state.info.title.replace(/[*'/":<>?\\|]/g, '_'));
 		var albumCover = file + '.jpeg';
 		if (!fs.existsSync(albumCover)) {
-			var thumb = this.state.info.player_response.videoDetails.thumbnail.thumbnails;
-			request.get(thumb[thumb.length - 1].url).pipe(fs.createWriteStream(albumCover));
+			var thumb = this.state.info.player_response.videoDetails.thumbnail
+				.thumbnails;
+			request
+				.get(thumb[thumb.length - 1].url)
+				.pipe(fs.createWriteStream(albumCover));
 		}
 		if (selectedFormat == 'mp3') {
 			if (!fs.existsSync(file + '.mp3')) {
 				this.audio = ytdl(this.state.link, options)
 					.on('progress', (length, downloaded, totallength) => {
-						if (!this.state.isDownloading && this.convert != null) this.audio.pause();
-						this.setState({ percentA: Math.round(downloaded / totallength * 100) });
+						if (!this.state.isDownloading && this.convert != null)
+							this.audio.pause();
+						this.setState({
+							percentA: Math.round(downloaded / totallength * 100)
+						});
 					})
 					.on('error', (err) => console.log(err));
 				this.convert = ffmpeg(this.audio)
@@ -179,13 +198,20 @@ export default class Listitem extends Component {
 					})
 					.on('end', () => {
 						this.savedPath = file + '.mp3';
-						const writer = new ID3Writer(fs.readFileSync(file + '_downloading.mp3'));
-						var title = this.state.info.player_response.videoDetails.title.split('-');
-						writer.setFrame('TIT2', title[1] || '').setFrame('TPE1', [ title[0] ]).setFrame('APIC', {
-							type: 3,
-							data: fs.readFileSync(albumCover),
-							description: 'Cover'
-						});
+						const writer = new ID3Writer(
+							fs.readFileSync(file + '_downloading.mp3')
+						);
+						var title = this.state.info.player_response.videoDetails.title.split(
+							'-'
+						);
+						writer
+							.setFrame('TIT2', title[1] || '')
+							.setFrame('TPE1', [ title[0] ])
+							.setFrame('APIC', {
+								type: 3,
+								data: fs.readFileSync(albumCover),
+								description: 'Cover'
+							});
 						writer.addTag();
 						fs.writeFileSync(this.savedPath, Buffer.from(writer.arrayBuffer));
 						fs.unlinkSync(file + '_downloading.mp3');
@@ -197,32 +223,43 @@ export default class Listitem extends Component {
 			if (!fs.existsSync(file + '.mp4')) {
 				this.audio = ytdl(this.state.link, options)
 					.on('progress', (length, downloaded, totallength) => {
-						if (!this.state.isDownloading && this.convert != null) this.audio.pause();
-						this.setState({ percentA: Math.round(downloaded / totallength * 100) });
+						if (!this.state.isDownloading && this.convert != null)
+							this.audio.pause();
+						this.setState({
+							percentA: Math.round(downloaded / totallength * 100)
+						});
 					})
 					.on('error', () => this.startDownload());
-				this.convert = ffmpeg(this.audio).toFormat('mp3').save(file + '_audio.mp3').on('end', () => {
-					options = { filter: (format) => (format.quality_label || format.resolution) === selectedFormat };
-					this.video = ytdl(this.state.link, options)
-						.on('progress', (length, downloaded, totallength) => {
-							if (!this.state.isDownloading) this.video.pause();
-							this.setState({ percentV: Math.round(downloaded / totallength * 100) });
-						})
-						.on('error', () => this.startDownload());
-					this.convert = ffmpeg()
-						.input(this.video)
-						.videoCodec('copy')
-						.input(file + '_audio.mp3')
-						.audioCodec('copy')
-						.save(file + '.mp4')
-						.on('end', () => {
-							fs.unlink(file + '_audio.mp3', (err) => {
-								if (err) throw err;
+				this.convert = ffmpeg(this.audio)
+					.toFormat('mp3')
+					.save(file + '_audio.mp3')
+					.on('end', () => {
+						options = {
+							filter: (format) =>
+								(format.quality_label || format.resolution) === selectedFormat
+						};
+						this.video = ytdl(this.state.link, options)
+							.on('progress', (length, downloaded, totallength) => {
+								if (!this.state.isDownloading) this.video.pause();
+								this.setState({
+									percentV: Math.round(downloaded / totallength * 100)
+								});
+							})
+							.on('error', () => this.startDownload());
+						this.convert = ffmpeg()
+							.input(this.video)
+							.videoCodec('copy')
+							.input(file + '_audio.mp3')
+							.audioCodec('copy')
+							.save(file + '.mp4')
+							.on('end', () => {
+								fs.unlink(file + '_audio.mp3', (err) => {
+									if (err) throw err;
+								});
+								this.savedPath = file + '.mp4';
+								this.destroy(file + '.mp4');
 							});
-							this.savedPath = file + '.mp4';
-							this.destroy(file + '.mp4');
-						});
-				});
+					});
 			} else this.destroy(file + '.mp4');
 		}
 	}
@@ -241,18 +278,22 @@ export default class Listitem extends Component {
 		ytdl.getInfo(link, (err, info) => {
 			if (err) this.close();
 			else {
+				console.log(info);
 				this.loaded();
 				var allformats = ytdl.filterFormats(info.formats, 'videoonly');
 				var formats = [];
 				allformats.forEach((format) => {
-					if (!JSON.stringify(formats).includes(format.quality_label)) formats.push(format);
+					if (!JSON.stringify(formats).includes(format.quality_label))
+						formats.push(format);
 				});
 				//<------------------------------------------------------------------------------------------------------------>
-				//console.log(formats);
+				console.log(formats);
 				//<------------------------------------------------------------------------------------------------------------>
 				this.setState({
 					info: info,
-					time: this.toHHMMSS(parseInt(info.player_response.videoDetails.lengthSeconds)),
+					time: this.toHHMMSS(
+						parseInt(info.player_response.videoDetails.lengthSeconds)
+					),
 					videoformats: formats
 				});
 			}
@@ -262,7 +303,8 @@ export default class Listitem extends Component {
 	componentWillUnmount() {
 		if (this.state.percentA > 0 || this.state.percentV > 0) {
 			if (this.state.percentA != 100) {
-				if (this.state.selectedFormat != 'mp3') fs.unlink(this.path + '_audio.mp3', (err) => console.log(err));
+				if (this.state.selectedFormat != 'mp3')
+					fs.unlink(this.path + '_audio.mp3', (err) => console.log(err));
 				else fs.unlink(this.path + '.mp3', (err) => console.log(err));
 			} else if (this.state.percentV != 100) {
 				if (this.state.selectedFormat != 'mp3') {
@@ -274,7 +316,15 @@ export default class Listitem extends Component {
 	}
 
 	render() {
-		var { info, isHovering, isDownloading, percentA, percentV, time, videoformats } = this.state;
+		var {
+			info,
+			isHovering,
+			isDownloading,
+			percentA,
+			percentV,
+			time,
+			videoformats
+		} = this.state;
 		var title, time;
 		if (info != null) {
 			title = info.player_response.videoDetails.title.split('-');
@@ -296,9 +346,17 @@ export default class Listitem extends Component {
 				{info == null ? (
 					<Loading color={colors.secondary} />
 				) : (
-					<div onMouseOver={this.mouseHover} onMouseLeave={this.mouseLeave} className="item_container">
+					<div
+						onMouseOver={this.mouseHover}
+						onMouseLeave={this.mouseLeave}
+						className="item_container"
+					>
 						{isHovering && (
-							<div onClick={this.close} style={{ color: colors.color }} className="close">
+							<div
+								onClick={this.close}
+								style={{ color: colors.color }}
+								className="close"
+							>
 								<FaTimesCircle />
 							</div>
 						)}
@@ -320,7 +378,10 @@ export default class Listitem extends Component {
 							</div>
 							<br />
 							<div
-								className={'radio-group ' + (this.props.theme === 1 ? 'linput' : 'dinput')}
+								className={
+									'radio-group ' +
+									(this.props.theme === 1 ? 'linput' : 'dinput')
+								}
 								style={{
 									backgroundColor: colors.background,
 									boxShadow: '0 0 2px 2px ' + colors.shadow
@@ -344,13 +405,13 @@ export default class Listitem extends Component {
 											<input
 												type="radio"
 												onClick={this.chooseFormat}
-												value={format.quality_label || format.resolution}
+												value={format.qualityLabel || format.resolution}
 												name={`${this.props.index}type`}
 												className="btnRadio"
 												id={`${this.props.index}option${i}`}
 											/>
 											<label htmlFor={`${this.props.index}option${i}`}>
-												{format.quality_label || format.resolution}
+												{format.qualityLabel || format.resolution}
 											</label>
 										</div>
 									);
@@ -394,13 +455,22 @@ export default class Listitem extends Component {
 								strokeWidth="5"
 								sqSize="60"
 								color={colors.secondary}
-								percentage={percentV == 0 && isDownloading && percentA == 100 ? 5 : percentV}
+								percentage={
+									percentV == 0 && isDownloading && percentA == 100 ? (
+										5
+									) : (
+										percentV
+									)
+								}
 							/>
 						</div>
 						{isDownloading ? (
 							<div
 								className="btnIcon"
-								style={{ backgroundColor: colors.secondary, color: colors.background }}
+								style={{
+									backgroundColor: colors.secondary,
+									color: colors.background
+								}}
 								onClick={this.pause}
 							>
 								<FaPauseCircle size={20} />
@@ -408,7 +478,10 @@ export default class Listitem extends Component {
 						) : (
 							<div
 								className="btnIcon download"
-								style={{ backgroundColor: colors.secondary, color: colors.background }}
+								style={{
+									backgroundColor: colors.secondary,
+									color: colors.background
+								}}
 								onClick={this.doDownload}
 							>
 								<FaPlayCircle size={20} />
