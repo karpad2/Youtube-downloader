@@ -284,10 +284,12 @@ export default class Listitem extends Component {
 				var allformats = ytdl.filterFormats(info.formats, 'videoonly');
 				var formats = [];
 				//console.log(allformats);
+				allformats.sort((a, b) => b.bitrate - a.bitrate);
 				allformats.forEach((format) => {
 					if (!JSON.stringify(formats).includes(format.qualityLabel))
 						formats.push(format);
 				});
+				formats.sort((a, b) => b.height - a.height);
 				//<------------------------------------------------------------------------------------------------------------>
 				console.log(formats);
 				//<------------------------------------------------------------------------------------------------------------>
