@@ -285,10 +285,7 @@ export default class Listitem extends Component {
 				var formats = [];
 				//console.log(allformats);
 				allformats.forEach((format) => {
-					if (
-						!JSON.stringify(formats).includes(format.qualityLabel) &&
-						format.container == 'webm'
-					)
+					if (!JSON.stringify(formats).includes(format.qualityLabel))
 						formats.push(format);
 				});
 				//<------------------------------------------------------------------------------------------------------------>
