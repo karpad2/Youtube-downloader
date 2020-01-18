@@ -236,7 +236,7 @@ export default class Listitem extends Component {
 					.on('end', () => {
 						options = {
 							filter: (format) =>
-								(format.quality_label || format.resolution) === selectedFormat
+								(format.qualityLabel || format.resolution) === selectedFormat
 						};
 						this.video = ytdl(this.state.link, options)
 							.on('progress', (length, downloaded, totallength) => {
@@ -278,16 +278,15 @@ export default class Listitem extends Component {
 		ytdl.getInfo(link, (err, info) => {
 			if (err) this.close();
 			else {
-				console.log(info);
 				this.loaded();
 				var allformats = ytdl.filterFormats(info.formats, 'videoonly');
 				var formats = [];
 				allformats.forEach((format) => {
-					if (!JSON.stringify(formats).includes(format.quality_label))
+					if (!JSON.stringify(formats).includes(format.qualityLabel))
 						formats.push(format);
 				});
 				//<------------------------------------------------------------------------------------------------------------>
-				console.log(formats);
+				//console.log(formats);
 				//<------------------------------------------------------------------------------------------------------------>
 				this.setState({
 					info: info,
