@@ -12,17 +12,16 @@ import {
 	FaPlayCircle,
 	FaInfoCircle
 } from 'react-icons/fa';
-import ffmpegPath from 'ffmpeg-static-electron';
+
 import ffmpeg from 'fluent-ffmpeg';
 var request = require('request');
 const ID3Writer = require('browser-id3-writer');
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
-if (isDevelopment) ffmpeg.setFfmpegPath(ffmpegPath.path);
-else
-	ffmpeg.setFfmpegPath(
-		ffmpegPath.path.replace('app.asar', 'app.asar.unpacked')
-	);
+
+const ffmpegPath = require('ffmpeg-static');
+if (isDevelopment) ffmpeg.setFfmpegPath(ffmpegPath);
+else ffmpeg.setFfmpegPath(ffmpegPath.replace('app.asar', 'app.asar.unpacked'));
 
 export default class Listitem extends Component {
 	constructor(props) {
@@ -171,15 +170,16 @@ export default class Listitem extends Component {
 		var file = (this.path =
 			path + this.state.info.title.replace(/[*'/":<>?\\|]/g, '_'));
 		var albumCover = file + '.jpeg';
-		if (!fs.existsSync(albumCover)) {
-			var thumb = this.state.info.player_response.videoDetails.thumbnail
-				.thumbnails;
-			request
-				.get(thumb[thumb.length - 1].url)
-				.pipe(fs.createWriteStream(albumCover));
-		}
+
 		if (selectedFormat == 'mp3') {
 			if (!fs.existsSync(file + '.mp3')) {
+				if (!fs.existsSync(albumCover)) {
+					var thumb = this.state.info.player_response.videoDetails.thumbnail
+						.thumbnails;
+					request
+						.get(thumb[thumb.length - 1].url)
+						.pipe(fs.createWriteStream(albumCover));
+				}
 				this.audio = ytdl(this.state.link, options)
 					.on('progress', (length, downloaded, totallength) => {
 						if (!this.state.isDownloading && this.convert != null)
@@ -251,7 +251,9 @@ export default class Listitem extends Component {
 							.videoCodec('copy')
 							.input(file + '_audio.mp3')
 							.audioCodec('copy')
+							.toFormat('mp4')
 							.save(file + '.mp4')
+							.on('error', (err) => console.log(err))
 							.on('end', () => {
 								fs.unlink(file + '_audio.mp3', (err) => {
 									if (err) throw err;
@@ -281,12 +283,16 @@ export default class Listitem extends Component {
 				this.loaded();
 				var allformats = ytdl.filterFormats(info.formats, 'videoonly');
 				var formats = [];
+				//console.log(allformats);
 				allformats.forEach((format) => {
-					if (!JSON.stringify(formats).includes(format.qualityLabel))
+					if (
+						!JSON.stringify(formats).includes(format.qualityLabel) &&
+						format.container == 'webm'
+					)
 						formats.push(format);
 				});
 				//<------------------------------------------------------------------------------------------------------------>
-				//console.log(formats);
+				console.log(formats);
 				//<------------------------------------------------------------------------------------------------------------>
 				this.setState({
 					info: info,
