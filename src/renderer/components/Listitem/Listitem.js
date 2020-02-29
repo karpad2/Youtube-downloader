@@ -291,7 +291,7 @@ export default class Listitem extends Component {
 				});
 				formats.sort((a, b) => b.height - a.height);
 				//<------------------------------------------------------------------------------------------------------------>
-				console.log(formats);
+				//console.log(formats);
 				//<------------------------------------------------------------------------------------------------------------>
 				this.setState({
 					info: info,
